@@ -1,6 +1,8 @@
 <template>
     <div>
 <h1>字典表</h1>
+
+
     </div>
 </template>
 

@@ -1,145 +1,166 @@
 <template>
-    <div class="unitWrapper">
-        <div class="title">
-            <Title>
-                <template #TitleBox>资源管理</template>
-            </Title>
-        </div>
-        <div class="unitContainer">
-            <div class="left">
-                <div class="enterpriseType">
-                    <span :class="{'currentEnterpriseType':index==enterpriseTypeNum}" @click='checkedEnterpriseType(index)' v-for="(item,index) in enterpriseTypeList" :key="item">{{item}}</span>
-                </div>
-                <div class="searchUnit">
-                    <el-input placeholder="请输入内容" v-model="searchUnit" clearable size="small">
-                    </el-input>
-                    <el-button size="mini" type="primary">搜索</el-button>
-                    <!-- <el-button size="mini" type="primary">新增系统</el-button> -->
-                    <el-button size="mini" type="primary" @click="dialogUnitFormVisible = true">新增单位</el-button>
-                    <el-dialog title="新增单位" :visible.sync="dialogUnitFormVisible">
-                        <el-form :model="unitForm">
-                            <el-form-item label="单位名称" :label-width="formLabelWidth">
-                                <el-input v-model="unitForm.name" autocomplete="off"></el-input>
-                            </el-form-item>
-                            <el-form-item label="单位类型" :label-width="formLabelWidth">
-                                <el-input v-model="unitForm.type" autocomplete="off"></el-input>
-                            </el-form-item>
-                            <el-form-item label="单位简介" :label-width="formLabelWidth">
-                                <el-input v-model="unitForm.inntroduction" autocomplete="off"></el-input>
-                            </el-form-item>
-                            <el-form-item label="邮箱" :label-width="formLabelWidth">
-                                <el-input v-model="unitForm.email" autocomplete="off"></el-input>
-                            </el-form-item>
-                            <el-form-item label="联系方式" :label-width="formLabelWidth">
-                                <el-input v-model="unitForm.phone" autocomplete="off"></el-input>
-                            </el-form-item>
-                        </el-form>
-                        <div slot="footer" class="dialog-footer">
-                            <el-button @click="dialogUnitFormVisible = false">取 消</el-button>
-                            <el-button type="primary" @click="sureUnit()">确 定</el-button>
-                        </div>
-                    </el-dialog>
-
-                </div>
-                <div class="units">
-                    <div class="unitBox">
-                        <div class="unit" v-for="(item,index) in unitList" :key="index">
-                            <div class="unitInfor">
-                                <span class="unitName">{{item.name}}</span>
-                                <span class="CreateTime">创建时间：
-                                    <span>{{item.CreateTime}}</span>
-                                </span>
-                            </div>
-                            <div class="timeLength">
-                                <span>{{item.timeLength}}</span>
-                            </div>
-                            <div class="unitDescribe">
-                                <span>{{item.discripition}}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="systemPaging">
-                        <el-pagination background layout="prev, pager, next" :total="unitTotal" :pager-count='unitPagingCount'>
-                        </el-pagination>
-                    </div>
-                </div>
-            </div>
-            <div class="right">
-                <div class="addArea">
-                    <el-button type="primary" @click="dialogAreaFormVisible = true">新增区域</el-button>
-                    <el-dialog title="新增区域" :visible.sync="dialogAreaFormVisible">
-                        <el-form :model="areaForm">
-                            <el-form-item label="业主单位" :label-width="formLabelWidth">
-                                <el-input v-model="areaForm.owner" autocomplete="off"></el-input>
-                            </el-form-item>
-                            <el-form-item label="区域名称" :label-width="formLabelWidth">
-                                <el-input v-model="areaForm.name" autocomplete="off"></el-input>
-                            </el-form-item>
-                            <el-form-item label="维保单位" :label-width="formLabelWidth">
-                                <el-input v-model="areaForm.maintenance" autocomplete="off"></el-input>
-                            </el-form-item>
-                            <el-form-item label="本地服务器ip" :label-width="formLabelWidth">
-                                <el-input v-model="areaForm.local" autocomplete="off"></el-input>
-                            </el-form-item>
-                            <el-form-item label="监控中心ip" :label-width="formLabelWidth">
-                                <el-input v-model="areaForm.monitor" autocomplete="off"></el-input>
-                            </el-form-item>
-                        </el-form>
-                        <div slot="footer" class="dialog-footer">
-                            <el-button @click="dialogAreaFormVisible = false">取 消</el-button>
-                            <el-button type="primary" @click="sureArea()">确 定</el-button>
-                        </div>
-                    </el-dialog>
-
-                </div>
-                <div class="areas">
-                    <div class="areaList">
-                        <div class="area" v-for="(item,index) in areaList" :key="index">
-                            <p class="areaName">{{item.name}}</p>
-                            <p>创建时间：{{item.createTime}}</p>
-                            <p class="operation">
-                                <el-button type="primary" icon="el-icon-edit" circle size='mini' @click="dialogAreaModifyFormVisible = true"></el-button>
-                                <el-dialog title="修改区域" :visible.sync="dialogAreaModifyFormVisible">
-                                    <el-form :model="areaModifyForm">
-                                        <el-form-item label="业主单位" :label-width="formLabelWidth">
-                                            <el-input v-model="areaModifyForm.owner" autocomplete="off"></el-input>
-                                        </el-form-item>
-                                        <el-form-item label="区域名称" :label-width="formLabelWidth">
-                                            <el-input v-model="areaModifyForm.name" autocomplete="off"></el-input>
-                                        </el-form-item>
-                                        <el-form-item label="维保单位" :label-width="formLabelWidth">
-                                            <el-input v-model="areaModifyForm.maintenance" autocomplete="off"></el-input>
-                                        </el-form-item>
-                                        <el-form-item label="本地服务器ip" :label-width="formLabelWidth">
-                                            <el-input v-model="areaModifyForm.local" autocomplete="off"></el-input>
-                                        </el-form-item>
-                                        <el-form-item label="监控中心ip" :label-width="formLabelWidth">
-                                            <el-input v-model="areaModifyForm.monitor" autocomplete="off"></el-input>
-                                        </el-form-item>
-                                    </el-form>
-                                    <div slot="footer" class="dialog-footer">
-                                        <el-button @click="dialogAreaModifyFormVisible = false">取 消</el-button>
-                                        <el-button type="primary" @click="sureModifyArea()">确 定</el-button>
-                                    </div>
-                                </el-dialog>
-
-                                <el-button type="danger" icon="el-icon-delete" circle size='mini' @click="delateArea(item.name)"></el-button>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="areaPaging">
-                        <el-pagination background layout="prev, pager, next" :total="areaTotal" :pager-count='unitPagingCount'>
-                        </el-pagination>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="unitWrapper">
+    <div class="title">
+      <Title>
+        <template #TitleBox>单位管理</template>
+      </Title>
     </div>
+    <div class="unitContainer">
+      <div class="left">
+        <div class="enterpriseType">
+          <span :class="{'currentEnterpriseType':index==enterpriseTypeNum}" @click='checkedEnterpriseType(index)' v-for="(item,index) in enterpriseTypeList" :key="item">{{item}}</span>
+        </div>
+        <div class="searchUnit">
+          <el-input placeholder="请输入内容" v-model="searchUnit" clearable size="small">
+          </el-input>
+          <el-button size="mini" type="primary">搜索</el-button>
+          <!-- <el-button size="mini" type="primary">新增系统</el-button> -->
+          <el-button size="mini" type="primary" @click="dialogUnitFormVisible = true">新增单位</el-button>
+          <el-dialog title="新增单位" :visible.sync="dialogUnitFormVisible">
+            <el-form :model="unitForm">
+              <el-form-item label="单位名称" :label-width="formLabelWidth">
+                <el-input v-model="unitForm.name" autocomplete="off"></el-input>
+              </el-form-item>
+              <el-form-item label="单位类型" :label-width="formLabelWidth">
+                <el-radio v-model="unitForm.factoryType" label="1">政企</el-radio>
+                <el-radio v-model="unitForm.factoryType" label="2">维保</el-radio>
+                <el-radio v-model="unitForm.factoryType" label="3">伙伴</el-radio>
+                <el-radio v-model="unitForm.factoryType" label="4">监管</el-radio>
+              </el-form-item>
+              <el-form-item label="存在隧道" :label-width="formLabelWidth">
+                <el-radio v-model="unitForm.hasImageType" label="1">是</el-radio>
+                <el-radio v-model="unitForm.hasImageType" label="2">否</el-radio>
+              </el-form-item>
+              <el-form-item label="邮 箱" :label-width="formLabelWidth">
+                <el-input v-model="unitForm.email" autocomplete="off"></el-input>
+              </el-form-item>
+              <el-form-item label="联系方式" :label-width="formLabelWidth">
+                <el-input v-model="unitForm.phone" autocomplete="off"></el-input>
+              </el-form-item>
+              <el-form-item label="单位简介" :label-width="formLabelWidth">
+                <el-input v-model="unitForm.describe" autocomplete="off"></el-input>
+              </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+              <el-button @click="dialogUnitFormVisible = false">取 消</el-button>
+              <el-button type="primary" @click="sureUnit()">确 定</el-button>
+            </div>
+          </el-dialog>
+
+        </div>
+        <div class="units">
+          <div class="unitBox">
+            <div class="unit" v-for="(item,index) in unitList" :key="index">
+              <div class="unitInfor">
+                <p class="unitName">{{item.name}}</p>
+                <p class="CreateTime">创建时间：
+                  <span>{{item.CreateTime}}</span>
+                </p>
+              </div>
+              <!-- <div class="timeLength">
+                <span>{{item.timeLength}}</span>
+              </div>
+              <div class="unitDescribe">
+                <span>{{item.discripition}}</span>
+              </div> -->
+            </div>
+          </div>
+
+          <div class="systemPaging">
+            <el-pagination background layout="prev, pager, next" :total="unitTotal" :pager-count='unitPagingCount'>
+            </el-pagination>
+          </div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="addArea">
+          <el-button type="primary" @click="dialogAreaFormVisible = true">新增区域</el-button>
+          <el-dialog title="新增区域" :visible.sync="dialogAreaFormVisible">
+            <el-form :model="areaForm">
+              <el-form-item label="站点名称" :label-width="formLabelWidth">
+                <el-input v-model="areaForm.siteName" autocomplete="off"></el-input>
+              </el-form-item>
+              <el-form-item label="存在监管" :label-width="formLabelWidth">
+                <el-radio v-model="areaForm.isManager" label="1">是</el-radio>
+                <el-radio v-model="areaForm.isManager" label="2">否</el-radio>
+              </el-form-item>
+              <el-form-item label="图形" :label-width="formLabelWidth">
+                <el-radio v-model="areaForm.imageType" label="1">楼栋图</el-radio>
+                <el-radio v-model="areaForm.imageType" label="2">隧道图</el-radio>
+              </el-form-item>
+              <!-- <el-form-item label="维保单位" :label-width="formLabelWidth">
+                <el-input v-model="areaForm.maintenance" autocomplete="off"></el-input>
+              </el-form-item>
+              <el-form-item label="本地服务器ip" :label-width="formLabelWidth">
+                <el-input v-model="areaForm.local" autocomplete="off"></el-input>
+              </el-form-item>
+              <el-form-item label="监控中心ip" :label-width="formLabelWidth">
+                <el-input v-model="areaForm.monitor" autocomplete="off"></el-input>
+              </el-form-item> -->
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+              <el-button @click="dialogAreaFormVisible = false">取 消</el-button>
+              <el-button type="primary" @click="sureArea()">确 定</el-button>
+            </div>
+          </el-dialog>
+
+        </div>
+        <div class="areas">
+          <div class="areaList">
+            <div class="area" v-for="(item,index) in areaList" :key="index">
+              <p class="areaName">{{item.siteName}}</p>
+              <p>创建时间：{{item.createTime}}</p>
+              <p class="operation">
+                <el-button type="primary" icon="el-icon-edit" circle size='mini' @click="dialogAreaModifyFormVisible = true"></el-button>
+                <el-dialog title="修改区域" :visible.sync="dialogAreaModifyFormVisible">
+                  <el-form :model="areaModifyForm">
+                    <el-form-item label="业主单位" :label-width="formLabelWidth">
+                      <el-input v-model="areaModifyForm.owner" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="区域名称" :label-width="formLabelWidth">
+                      <el-input v-model="areaModifyForm.name" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="维保单位" :label-width="formLabelWidth">
+                      <el-input v-model="areaModifyForm.maintenance" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="本地服务器ip" :label-width="formLabelWidth">
+                      <el-input v-model="areaModifyForm.local" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="监控中心ip" :label-width="formLabelWidth">
+                      <el-input v-model="areaModifyForm.monitor" autocomplete="off"></el-input>
+                    </el-form-item>
+                  </el-form>
+                  <div slot="footer" class="dialog-footer">
+                    <el-button @click="dialogAreaModifyFormVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="sureModifyArea()">确 定</el-button>
+                  </div>
+                </el-dialog>
+
+                <el-button type="danger" icon="el-icon-delete" circle size='mini' @click="delateArea(item.siteId)"></el-button>
+              </p>
+            </div>
+          </div>
+          <div class="areaPaging">
+            <el-pagination background layout="prev, pager, next" :total="areaTotal" :pager-count='unitPagingCount'>
+            </el-pagination>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import Title from "../../../components/Title";
+import { addFactory } from "@/apis/unit";
+import {
+  addFactorySite,
+  getListFactorySite,
+  deletedFactorySite
+} from "@/apis/unitSite";
+import { getKey } from "@/utils/local";
+import { getTime } from "@/utils/publictool";
+// import moment from 'moment'
 export default {
   components: {
     Title
@@ -157,8 +178,9 @@ export default {
       formLabelWidth: "100px", //对话框宽
       unitForm: {
         name: "",
-        type: "",
-        inntroduction: "",
+        factoryType: "1",
+        hasImageType: "1",
+        describe: "",
         email: "",
         phone: ""
       },
@@ -191,27 +213,14 @@ export default {
       //新增区域
       dialogAreaFormVisible: false,
       areaForm: {
-        owner: "",
-        name: "",
-        maintenance: "",
-        local: "",
-        monitor: ""
+        imageType: "1", //楼栋图，隧道图
+        isManager: "2", //是否存在监管单位
+        // localIp:'',// 本地ip
+        siteName: "" // 站点名称
+        // siteServer: "",//服务器ip
+        // system:'',//系统标识
       },
       areaList: [
-        { name: "洪河供电局", createTime: "2018-08-02" },
-        { name: "洪河供电局", createTime: "2018-08-02" },
-        { name: "洪河供电局", createTime: "2018-08-02" },
-        { name: "洪河供电局", createTime: "2018-08-02" },
-        { name: "洪河供电局", createTime: "2018-08-02" },
-        { name: "洪河供电局", createTime: "2018-08-02" },
-        { name: "洪河供电局", createTime: "2018-08-02" },
-        { name: "洪河供电局", createTime: "2018-08-02" },
-        { name: "洪河供电局", createTime: "2018-08-02" },
-        { name: "洪河供电局", createTime: "2018-08-02" },
-        { name: "洪河供电局", createTime: "2018-08-02" },
-        { name: "洪河供电局", createTime: "2018-08-02" },
-        { name: "洪河供电局", createTime: "2018-08-02" },
-        { name: "洪河供电局", createTime: "2018-08-02" },
         { name: "洪河供电局", createTime: "2018-08-02" },
         { name: "洪河供电局", createTime: "2018-08-02" }
       ], //区域列表
@@ -221,40 +230,123 @@ export default {
       areaModifyForm: {
         name: "",
         type: "",
-        inntroduction: "",
+        describe: "",
         email: "",
         phone: ""
       }
     };
+  },
+  created() {
+    this.getUnitSites();
   },
   methods: {
     //切换企业类型
     checkedEnterpriseType(index) {
       this.enterpriseTypeNum = index;
     },
-    //增加单位的确定修改
+    //获取单位站点
+    getUnitSites() {
+      getListFactorySite({ factoryId: getKey("userInfor").factoryId })
+        .then(res => {
+          if (res.httpStatus == 200) {
+            this.areaList = res.result.map(item => {
+              item.createTime = getTime(item.createTime);
+              return item;
+            });
+          } else {
+            this.$message({
+              type: "warning",
+              message: "网络请求失败"
+            });
+          }
+        })
+        .catch(err => {
+          console.log(err);
+          this.$message({
+            type: "warning",
+            message: "网络请求失败"
+          });
+        });
+    },
+    //增加单位的确定
     sureUnit() {
-      console.log(this.unitForm);
-      this.dialogUnitFormVisible = false;
+      // this.dialogUnitFormVisible = false;
+      addFactory(this.unitForm)
+        .then(res => {
+          if (res.httpStatus == 200) {
+            this.$message({
+              type: "success",
+              message: "添加成功"
+            });
+          } else {
+            this.$message({
+              type: "warning",
+              message: "网络请求失败"
+            });
+          }
+          // console.log("添加单位成功res", res);
+        })
+        .catch(err => {
+          console.log(err);
+        });
     },
     // 增加区域确定函数
     sureArea() {
-      this.dialogAreaFormVisible = false;
-      console.log(this.areaForm);
+      let areaForm = {
+        factoryId: getKey("userInfor").factoryId,
+        ...this.areaForm
+      };
+      // this.dialogAreaFormVisible = false;
+      addFactorySite(areaForm)
+        .then(res => {
+          if (res.httpStatus == 200) {
+            this.$message({
+              type: "success",
+              message: "添加成功"
+            });
+          } else {
+            this.$message({
+              type: "warning",
+              message: "网络请求失败"
+            });
+          }
+        })
+        .catch(err => {
+          console.log(err);
+          this.$message({
+            type: "warning",
+            message: "网络请求失败"
+          });
+        });
+      console.log(areaForm);
     },
     //删除区域
-    delateArea(name) {
-      console.log(111, name);
+    delateArea(siteId) {
       this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
       })
         .then(() => {
-          this.$message({
-            type: "success",
-            message: "删除成功!"
-          });
+          console.log(siteId);
+          deletedFactorySite({ siteId })
+            .then(res => {
+              console.log(res);
+              if (res.httpStatus == 200) {
+                this.getUnitSites()
+                this.$message({
+                  type: "success",
+                  message: "删除成功!"
+                });
+              }
+            })
+            .catch(err => {
+              console.log(err);
+              this.$message({
+                type: "warning",
+                message: "网络请求失败"
+              });
+            });
         })
         .catch(() => {
           this.$message({
@@ -265,8 +357,9 @@ export default {
     },
     //修改区域
     sureModifyArea() {
-      this.dialogAreaModifyFormVisible = false;
-      console.log(this.areaModifyForm);
+      // this.dialogAreaModifyFormVisible = false;
+      // console.log(this.areaModifyForm);
+      
     }
   }
 };
@@ -293,12 +386,14 @@ export default {
       .enterpriseType {
         margin: 20px 0 0 0;
         span {
+          cursor: pointer;
           display: inline-block;
           padding: 0 15px;
           margin: 0 5px;
           background-color: #fff;
           line-height: 40px;
           height: 40px;
+          border-radius: 5px;
         }
         .currentEnterpriseType {
           background-color: #409eff;

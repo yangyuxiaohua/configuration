@@ -1,60 +1,60 @@
 <template>
-    <div class="roleTemplateWrapper">
-        <div class="title">
-            <Title>
-                <template #TitleBox>角色模板</template>
-            </Title>
-        </div>
-        <div class="roleType">
-            <LinePressing>
-                <template #line>角色</template>
-                <template #container>
-                    <div class="role">
-                        <div class="roleContainer">
-                            <span v-for="(item,index) in roleList" :key="index" :class="{'checkedRole' : index===currentProjectRole}" @click="checkedRole(index)">{{item}}</span>
-
-                            <el-button size="mini" type="primary" @click="dialogRoleFormVisible = true">+</el-button>
-                            <el-dialog title="新增角色模板" :visible.sync="dialogRoleFormVisible">
-                                <el-form :model="roleForm">
-                                    <el-form-item label="公司类型" :label-width="formLabelWidth">
-                                        <el-radio v-model="roleForm.radio" label="1">政企</el-radio>
-                                        <el-radio v-model="roleForm.radio" label="2">维保</el-radio>
-                                        <el-radio v-model="roleForm.radio" label="3">伙伴</el-radio>
-                                        <el-radio v-model="roleForm.radio" label="4">监管</el-radio>
-                                    </el-form-item>
-                                    <el-form-item label="角色名称" :label-width="formLabelWidth">
-                                        <el-input v-model="roleForm.name" autocomplete="off"></el-input>
-                                    </el-form-item>
-                                    <el-form-item label="角色标识" :label-width="formLabelWidth">
-                                        <el-input v-model="roleForm.logo" autocomplete="off"></el-input>
-                                    </el-form-item>
-                                </el-form>
-                                <div slot="footer" class="dialog-footer">
-                                    <el-button @click="dialogRoleFormVisible = false">取 消</el-button>
-                                    <el-button type="primary" @click="sureRole()">确 定</el-button>
-                                </div>
-                            </el-dialog>
-
-                        </div>
-                    </div>
-                </template>
-            </LinePressing>
-        </div>
-        <div class="roleTemplateContainer">
-            <div class="left">
-                <p class="warningSystem">预警系统</p>
-                <el-tree :data="warningData" show-checkbox node-key="id" :default-expanded-keys="[1]" :props="warningDefaultProps" ref='warningTree'>
-                </el-tree>
-                <el-button type="primary" @click="submit()">提交</el-button>
-            </div>
-            <div class="right">
-                <p class="maintenanceSystem">维保系统</p>
-                <el-tree :data="maintenanceData" show-checkbox node-key="id" :default-expanded-keys="[1]" :props="maintenanceDefaultProps" ref='maintenanceTree'>
-                </el-tree>
-                <el-button type="primary">提交</el-button>
-            </div>
-        </div>
+  <div class="roleTemplateWrapper">
+    <div class="title">
+      <Title>
+        <template #TitleBox>角色模板</template>
+      </Title>
     </div>
+    <div class="roleType">
+      <LinePressing>
+        <template #line>角色</template>
+        <template #container>
+          <div class="role">
+            <div class="roleContainer">
+              <span v-for="(item,index) in roleList" :key="index" :class="{'checkedRole' : index===currentProjectRole}" @click="checkedRole(index)">{{item}}</span>
+
+              <el-button size="mini" type="primary" @click="dialogRoleFormVisible = true">+</el-button>
+              <el-dialog title="新增角色模板" :visible.sync="dialogRoleFormVisible">
+                <el-form :model="roleForm">
+                  <el-form-item label="公司类型" :label-width="formLabelWidth">
+                    <el-radio v-model="roleForm.radio" label="1">政企</el-radio>
+                    <el-radio v-model="roleForm.radio" label="2">维保</el-radio>
+                    <el-radio v-model="roleForm.radio" label="3">伙伴</el-radio>
+                    <el-radio v-model="roleForm.radio" label="4">监管</el-radio>
+                  </el-form-item>
+                  <el-form-item label="角色名称" :label-width="formLabelWidth">
+                    <el-input v-model="roleForm.name" autocomplete="off"></el-input>
+                  </el-form-item>
+                  <el-form-item label="角色标识" :label-width="formLabelWidth">
+                    <el-input v-model="roleForm.logo" autocomplete="off"></el-input>
+                  </el-form-item>
+                </el-form>
+                <div slot="footer" class="dialog-footer">
+                  <el-button @click="dialogRoleFormVisible = false">取 消</el-button>
+                  <el-button type="primary" @click="sureRole()">确 定</el-button>
+                </div>
+              </el-dialog>
+
+            </div>
+          </div>
+        </template>
+      </LinePressing>
+    </div>
+    <div class="roleTemplateContainer">
+      <div class="left">
+        <p class="warningSystem">预警系统</p>
+        <el-tree :data="warningData" show-checkbox node-key="id" :default-expanded-keys="[1]" :props="warningDefaultProps" ref='warningTree'>
+        </el-tree>
+        <el-button type="primary" @click="submit()">提交</el-button>
+      </div>
+      <div class="right">
+        <p class="maintenanceSystem">维保系统</p>
+        <el-tree :data="maintenanceData" show-checkbox node-key="id" :default-expanded-keys="[1]" :props="maintenanceDefaultProps" ref='maintenanceTree'>
+        </el-tree>
+        <el-button type="primary">提交</el-button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -227,10 +227,12 @@ export default {
     .role {
       .roleContainer {
         span {
+          cursor: pointer;
           display: inline-block;
           padding: 5px 10px;
           margin: 0 5px;
           border: 1px solid #e7e7e7;
+          border-radius: 5px; 
         }
         .el-button {
           margin-left: 5px;

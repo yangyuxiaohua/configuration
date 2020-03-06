@@ -8,25 +8,30 @@ import axios from 'axios'
 import qs from 'qs'
 
 // 引入本地存储工具函数
-import {getToken} from "@/utils/local";
-
+import {getSid} from "@/utils/local";
 
 // 按需引入组件
 import { Message } from 'element-ui'
+// import { setSid } from './local';
 
 // 设置默认请求的接口地址
-// 创建axios实例
-const service = axios.create({
-    baseURL: '', // api 的 base_url
-    timeout: 6000 // 请求超时时间
-  })
-
+axios.defaults.baseURL = 'http://192.168.0.200:2221'
+// axios.defaults.baseURL = 'http://192.168.0.19:2221'
+axios.defaults.timeout = 6000
+// axios.defaults.headers = {
+//     'Content-type': 'application/x-www-form-urlencoded' //设置请求参数格式
+// }
+// axios.defaults.withCredentials=true  //请求跨域的时候是否需要凭证
 // 请求拦截器
 axios.interceptors.request.use(config => {
-    // 所有的axios请求，在请求发送出去之前 带上token
-    if (getToken()) {
-        config.headers['token'] = getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
+    // 所有的axios请求，在请求发送出去之前 带上sid
+    if (sessionStorage.sid) {
+        config.headers['sid'] = getSid() // 让每个请求携带自定义sid 请根据实际情况自行修改
+        // setSid(sessionStorage.sid)
+        // axios.defaults.headers.common['sid'] = getSid()
+        // console.log(getSid())
       }
+    //   console.log('请求拦截器',config)
       return config
 }, error => {
     return Promise.reject(error); // 请求错误处理
@@ -34,7 +39,6 @@ axios.interceptors.request.use(config => {
 
 // 响应拦截器
 axios.interceptors.response.use(response => {
-    // response就是后端响应回来的东西 如果你想做什么统一的处理 可以在这里写
     let { code, msg } = response.data;
     // 成功
     if (code === 0) {
@@ -46,6 +50,7 @@ axios.interceptors.response.use(response => {
         // 失败
         Message.error(msg)
     }
+    // console.log("响应拦截器",response)
     return response;
 
 }, error => {

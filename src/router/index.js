@@ -30,18 +30,32 @@ const routes = [{
       {
         path: '/index/map/editArea',
         name: 'editArea',
-        component: () => import('../views/index/map/EditArea.vue')
+        component: () => import('../views/index/map/EditArea.vue'),
+        children: [{
+          path: "/index/map/editArea/editMap",
+          name:"editMap",
+          component:()=>import('../views/index/map/editMap/EditMap.vue')
+        },{
+          path: "/index/map/editArea/editCad",
+          name:"editCad",
+          component:()=>import('../views/index/map/editMap/EditCad.vue')
+        }]
       },
       {
         path: '/index/map/editIcon',
         name: 'editIcon',
         component: () => import('../views/index/map/EditIcon.vue')
       },
+      {
+        path: '/index/map/areaList',
+        name: 'areaList',
+        component: () => import('../views/index/map/AreaList.vue')
+      },
       //权限配置
       {
-        path: '/index/permissions/projectManagement',
-        name: 'projectManagement',
-        component: () => import('../views/index/permissions/ProjectManagement.vue')
+        path: '/index/permissions/RoleManagement',
+        name: 'roleManagement',
+        component: () => import('../views/index/permissions/RoleManagement.vue')
       },
       {
         path: '/index/permissions/resourceManagement',
@@ -59,9 +73,9 @@ const routes = [{
         component: () => import('../views/index/permissions/UnitManagement.vue')
       },
       {
-        path:"/index/permissions/roleTemplate",
-        name:"roleTemplate",
-        component:()=>import('../views/index/permissions/RoleTemplate.vue')
+        path: "/index/permissions/roleTemplate",
+        name: "roleTemplate",
+        component: () => import('../views/index/permissions/RoleTemplate.vue')
       },
       //图层配置
       {

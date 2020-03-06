@@ -15,7 +15,7 @@
                     <el-button size="mini" type="primary" @click="dialogSystemFormVisible = true">新增系统</el-button>
                     <el-dialog title="新增系统" :visible.sync="dialogSystemFormVisible">
                         <el-form :model="systemForm">
-                            <el-form-item label="系统名称" :label-width="formLabelWidth">
+                            <el-form-item label="系统名称" :label-width="formLabelWidth" >
                                 <el-input v-model="systemForm.name" autocomplete="off"></el-input>
                             </el-form-item>
                             <el-form-item label="系统标识" :label-width="formLabelWidth">
@@ -139,19 +139,19 @@
                     <el-dialog title="新增资源" :visible.sync="dialogResourceFormVisible">
                         <el-form :model="resourceForm">
                             <el-form-item label="系统" :label-width="formLabelWidth">
-                                <el-select v-model="resourceForm.region" placeholder="请选择系统">
-                                    <el-option label="区域一" value="shanghai"></el-option>
-                                    <el-option label="区域二" value="beijing"></el-option>
+                                <el-select v-model="resourceForm.system" placeholder="请选择系统">
+                                    <el-option label="预警系统" value="1"></el-option>
+                                    <el-option label="平台系统" value="50"></el-option>
                                 </el-select>
                             </el-form-item>
                             <el-form-item label="资源名称" :label-width="formLabelWidth">
                                 <el-input v-model="resourceForm.name" autocomplete="off"></el-input>
                             </el-form-item>
                             <el-form-item label="url地址" :label-width="formLabelWidth">
-                                <el-input v-model="resourceForm.logo" autocomplete="off"></el-input>
+                                <el-input v-model="resourceForm.url" autocomplete="off"></el-input>
                             </el-form-item>
-                            <el-form-item label="图标" :label-width="formLabelWidth">
-                                <el-input v-model="resourceForm.icon" autocomplete="off"></el-input>
+                            <el-form-item label="排序" :label-width="formLabelWidth">
+                                <el-input v-model="resourceForm.sort" autocomplete="off" readonly></el-input>
                             </el-form-item>
                         </el-form>
                         <div slot="footer" class="dialog-footer">
@@ -164,32 +164,31 @@
                     <el-table :data="tableData" stripe style="width: 100%">
                         <el-table-column prop="system" label="系统" width="100">
                         </el-table-column>
-                        <el-table-column prop="resource" label="资源名称" width="100">
+                        <el-table-column prop="name" label="资源名称" width="200">
                         </el-table-column>
                         <el-table-column prop="url" label="url地址">
                         </el-table-column>
-                        <el-table-column prop="icon" label="图标">
+                        <el-table-column prop="icon" label="图标" width="100">
                         </el-table-column>
                         <el-table-column prop="address" label="操作">
                             <template slot-scope="scope">
-                                <!-- <el-button size="mini" @click="handleEdit(scope.$index, scope.row)" type="primary">修改</el-button> -->
                                 <el-button size="mini" type="primary" @click="handleEdit(scope.$index, scope.row)">修改</el-button>
                                 <el-dialog title="修改资源" :visible.sync="dialogResourceFormModifyVisible">
-                                    <el-form :model="resourceForm">
+                                    <el-form :model="resourceModifyForm">
                                         <el-form-item label="系统" :label-width="formLabelWidth">
-                                            <el-select v-model="resourceForm.region" placeholder="请选择系统">
-                                                <el-option label="区域一" value="shanghai"></el-option>
-                                                <el-option label="区域二" value="beijing"></el-option>
+                                            <el-select v-model="resourceModifyForm.system" placeholder="请选择系统">
+                                                <el-option value="1" label="预警系统"></el-option>
+                                                <el-option value="50" label="平台系统"></el-option>
                                             </el-select>
                                         </el-form-item>
                                         <el-form-item label="资源名称" :label-width="formLabelWidth">
-                                            <el-input v-model="resourceForm.name" autocomplete="off"></el-input>
+                                            <el-input v-model="resourceModifyForm.name" autocomplete="off"></el-input>
                                         </el-form-item>
                                         <el-form-item label="url地址" :label-width="formLabelWidth">
-                                            <el-input v-model="resourceForm.logo" autocomplete="off"></el-input>
+                                            <el-input v-model="resourceModifyForm.url" autocomplete="off"></el-input>
                                         </el-form-item>
                                         <el-form-item label="图标" :label-width="formLabelWidth">
-                                            <el-input v-model="resourceForm.icon" autocomplete="off"></el-input>
+                                            <el-input v-model="resourceModifyForm.icon" autocomplete="off"></el-input>
                                         </el-form-item>
                                     </el-form>
                                     <div slot="footer" class="dialog-footer">
@@ -197,10 +196,8 @@
                                         <el-button type="primary" @click="sureModify()">确 定</el-button>
                                     </div>
                                 </el-dialog>
-                                <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                                <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)" class="deleteResource">删除</el-button>
                             </template>
-                            <!-- <el-button prop='id' size="mini" type="primary" @click='modify(id)'>修改</el-button>
-                            <el-button size="mini" type="primary">删除</el-button> -->
                         </el-table-column>
                     </el-table>
 
@@ -212,6 +209,13 @@
 
 <script>
 import Title from "../../../components/Title";
+import {
+  addResource,
+  getResource,
+  deleteResource,
+  modifyResource
+} from "@/apis/resource";
+import { Message } from "element-ui";
 export default {
   components: {
     Title
@@ -221,80 +225,96 @@ export default {
       searchSystem: "",
       projectTotal: 90,
       projectPagingCount: 5,
-      tableData: [
-        {
-          id: 1,
-          system: "火灾自动报警系统",
-          resource: "资源管理",
-          url: "/sksaf/sdjas/skjsak/sjhd",
-          icon: "hdjassdbsja"
-        },
-        {
-          id: 2,
-          system: "火灾自动报警系统",
-          resource: "资源管理",
-          url: "/sksaf/sdjas/skjsak/sjhd",
-          icon: "hdjassdbsja"
-        },
-        {
-          id: 3,
-          system: "火灾自动报警系统",
-          resource: "资源管理",
-          url: "/sksaf/sdjas/skjsak/sjhd",
-          icon: "hdjassdbsja"
-        },
-        {
-          id: 4,
-          system: "火灾自动报警系统",
-          resource: "资源管理",
-          url: "/sksaf/sdjas/skjsak/sjhd",
-          icon: "hdjassdbsja"
-        }
-      ],
+      tableData: [], //资源列表
       //增加系统对话框
       systemForm: {
         name: "",
         logo: ""
       },
       dialogSystemFormVisible: false,
-      formLabelWidth: "100px",
+      formLabelWidth: " px",
       //增加资源对话框
       dialogResourceFormVisible: false,
       resourceForm: {
-        region: "", //下拉框value
+        system: "", //下拉框value
         name: "",
-        logo: "",
-        icon: ""
+        sort: "1",
+        url: ""
       },
       //修改资源对话框
-      dialogResourceFormModifyVisible: false
+      dialogResourceFormModifyVisible: false,
+      resourceModifyForm: {
+        system: "",
+        name: "",
+        url: "",
+        icon: ""
+      },
+      currentId: "" //当前修改的resourceId
     };
   },
+  created() {
+    //初始化获取资源列表
+    this.getResourceList(1);
+  },
   methods: {
-    //资源表格操作按钮
+    //资源表格修改操作按钮
     handleEdit(a, b) {
-      console.log(a);
-      console.log(b);
       this.dialogResourceFormModifyVisible =
         this.dialogResourceFormModifyVisible == false ? true : false;
+      this.currentId = b.id;
     },
-    //确定修改
-    sureModify(){
-      console.log(this.resourceForm.icon)
-        this.dialogResourceFormModifyVisible = false
+    //确定修改资源
+    sureModify() {
+      console.log(this.resourceModifyForm);
+      this.dialogResourceFormModifyVisible = false;
+      console.log(this.currentId);
+      //   console.log(modifyResource)
+      modifyResource({ resourceId: this.currentId })
+        .then(res => {
+          if (res.httpStatus) {
+            this.$message({
+              type: "success",
+              message: "修改成功!"
+            });
+          }else{
+              this.$message({
+              type: "warning",
+              message: "修改失败!"
+            });
+          }
+          console.log(res);
+        })
+        .catch(err => {
+          {
+            console.log(err);
+            Message.error("修改失败");
+          }
+        });
     },
+    //确定删除函数
     handleDelete(a, b) {
-      console.log(a, b);
-      this.$confirm("此操作将永久删除该文件, 是否继续?", "提示", {
+      this.$confirm("此操作将永久删除该资源, 是否继续?", "提示", {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
         type: "warning"
       })
         .then(() => {
-          this.$message({
-            type: "success",
-            message: "删除成功!"
-          });
+          deleteResource({ resourceId: b.id })
+            .then(res => {
+              if (res.httpStatus === 200) {
+                this.tableData.splice(a, 1);
+                this.$message({
+                  type: "success",
+                  message: "删除成功!"
+                });
+              } else {
+                Message.error("网络请求发生错误，请稍后再试");
+              }
+            })
+            .catch(err => {
+              console.log(err);
+              Message.error("网络请求发生错误，请稍后再试");
+            });
         })
         .catch(() => {
           this.$message({
@@ -311,7 +331,57 @@ export default {
     // 增加资源确定函数
     sureResource() {
       this.dialogResourceFormVisible = false;
-      console.log(this.resourceForm.region);
+      console.log(this.resourceForm);
+      if (this.resourceForm.name === "") {
+        Message.error("请填写资源名称");
+      } else if (this.resourceForm.url === "") {
+        Message.error("请填写url地址");
+      } else if (this.resourceForm.sort === "") {
+        Message.error("请选择系统");
+      } else {
+        addResource(this.resourceForm)
+          .then(res => {
+            console.log(res);
+            if (res.httpStatus === 200) {
+              this.getResourceList(1);
+              Message({
+                type: "success",
+                message: "添加成功!"
+              });
+            } else {
+              Message.error("网络请求发生错误，请稍后再试");
+            }
+          })
+          .catch(err => {
+            console.log(err);
+            Message.error("添加失败");
+          });
+      }
+    },
+    //获取资源列表函数
+    getResourceList(system) {
+      getResource({ system: system })
+        .then(res => {
+          if (res.httpStatus === 200) {
+            let resourceList = res.result;
+            console.log(resourceList);
+            this.tableData = resourceList.map(item => {
+              return {
+                id: item.resourceId,
+                system: item.system == "1" ? "预警系统" : "平台系统",
+                name: item.name,
+                icon: item.icon,
+                url: item.url
+              };
+            });
+          } else {
+            Message.error("网络请求发生错误，请稍后再试");
+          }
+          console.log(res);
+        })
+        .catch(err => {
+          console.log(err);
+        });
     }
   }
 };
@@ -388,6 +458,9 @@ export default {
         }
         .cell {
           text-align: center;
+        }
+        .el-button{
+            margin-left: 10px;
         }
       }
     }

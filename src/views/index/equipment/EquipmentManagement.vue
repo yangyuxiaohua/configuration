@@ -23,10 +23,10 @@
                                 </span>
                             </div>
                             <div class="timeLength">
-                                <span>{{item.timeLength}}</span>
+                                <span>使用时限：{{item.timeLength}}</span>
                             </div>
                             <div class="unitDescribe">
-                                <span>{{item.discripition}}</span>
+                                <span>项目描述：{{item.discripition}}</span>
                             </div>
                         </div>
                     </div>
@@ -64,7 +64,6 @@
                         </el-table-column>
                         <el-table-column prop="address" label="操作">
                             <template slot-scope="scope">
-                                
                                 <el-button size="mini" type="primary" @click="handleEdit(scope.$index, scope.row)">修改</el-button>
                                 <el-dialog title="修改资源" :visible.sync="dialogResourceFormModifyVisible">
                                     <el-form :model="resourceForm">
@@ -206,6 +205,10 @@ export default {
             box-sizing: border-box;
             background-color: #fff;
             padding: 30px 10px 10px 10px;
+            .unitInfor{
+                display: flex;
+                justify-content: space-between;
+            }
           }
         }
       }

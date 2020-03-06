@@ -22,9 +22,16 @@
     <div class="container">
       <div class="containerTop">
         <div class="userInfor">
-          <img src="../assets/logo.png" alt="">
-          <span class="userName">张三</span>
-          <i class="el-icon-arrow-down"></i>
+          <img src="../assets/logo.png" alt="" class="avatar">
+          <span class="userName">{{userName}}</span>
+          <div>
+            <i class="el-icon-arrow-down" @click="showUser()" v-show="showUserInfor"></i>
+            <i class="el-icon-arrow-up" @click="hideUser()" v-show="hideUserInfor"></i>
+            <div class="userBox" v-show="hideUserInfor">
+
+            </div>
+          </div>
+
         </div>
       </div>
       <div class="containerWrapper">
@@ -35,6 +42,7 @@
 </template>
 
 <script>
+import { getKey } from "@/utils/local";
 export default {
   data() {
     return {
@@ -54,7 +62,8 @@ export default {
           text: "地图配置",
           submenu: [
             { name: "编辑区域", path: "/index/map/editArea" },
-            { name: "编辑图标", path: "/index/map/editIcon" }
+            { name: "编辑图标", path: "/index/map/editIcon" },
+            { name: "区域列表", path: "/index/map/areaList" }
           ]
         },
         {
@@ -64,7 +73,7 @@ export default {
           submenu: [
             { name: "用户管理", path: "/index/permissions/userManagement" },
             { name: "资源管理", path: "/index/permissions/resourceManagement" },
-            { name: "项目管理", path: "/index/permissions/projectManagement" },
+            { name: "角色管理", path: "/index/permissions/RoleManagement" },
             { name: "单位管理", path: "/index/permissions/unitManagement" },
             {
               name: "角色模板",
@@ -88,17 +97,29 @@ export default {
           submenu: [{ name: "字典表", path: "/index/dictionary/dictionary" }]
         }
       ],
-      defaultActive: "/index/equipment/equipmentManagement"
+      defaultActive: "/index/equipment/equipmentManagement",
+      showUserInfor: true, //显示隐藏个人信息栏
+      hideUserInfor: false,
+      userName: "请登录"
     };
   },
   created() {
     //刷新之后默认打开菜单
     this.defaultActive = this.$route.path;
+    this.userName = getKey("userInfor").username;
   },
   computed: {},
   methods: {
     activeMenu(index) {
       console.log(index);
+    },
+    showUser() {
+      this.showUserInfor = false;
+      this.hideUserInfor = true;
+    },
+    hideUser() {
+      this.showUserInfor = true;
+      this.hideUserInfor = false;
     }
   }
 };
@@ -149,7 +170,8 @@ export default {
       .userInfor {
         display: flex;
         align-items: center;
-        img {
+        position: relative;
+        .avatar {
           width: 32px;
           height: 32px;
           border-radius: 32px;
@@ -158,6 +180,14 @@ export default {
         .userName {
           margin: 0 15px 0 5px;
           line-height: 46px;
+        }
+        .userBox {
+          width: 200px;
+          height: 200px;
+          border: 1px solid red;
+          position: absolute;
+          left: 0;
+          top: 40px;
         }
       }
     }

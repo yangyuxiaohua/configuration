@@ -38,78 +38,6 @@
               <span></span>
             </div>
           </div>
-          <div class="projectInfor">
-            <div class="project">
-              <span class="projectName">红河项目</span>
-              <span>创建时间：
-                <span>2019-02-09</span>
-              </span>
-            </div>
-            <div class="projecttTime">
-              使用期限：
-              <span>2年</span>
-            </div>
-            <div class="owner">业主单位：
-              <span></span>
-            </div>
-            <div class="maintenance">维保单位：
-              <span></span>
-            </div>
-            <div class="regulatory">监管单位：
-              <span></span>
-            </div>
-            <div class="partner">伙伴单位：
-              <span></span>
-            </div>
-          </div>
-          <div class="projectInfor">
-            <div class="project">
-              <span class="projectName">红河项目</span>
-              <span>创建时间：
-                <span>2019-02-09</span>
-              </span>
-            </div>
-            <div class="projecttTime">
-              使用期限：
-              <span>2年</span>
-            </div>
-            <div class="owner">业主单位：
-              <span></span>
-            </div>
-            <div class="maintenance">维保单位：
-              <span></span>
-            </div>
-            <div class="regulatory">监管单位：
-              <span></span>
-            </div>
-            <div class="partner">伙伴单位：
-              <span></span>
-            </div>
-          </div>
-          <div class="projectInfor">
-            <div class="project">
-              <span class="projectName">红河项目</span>
-              <span>创建时间：
-                <span>2019-02-09</span>
-              </span>
-            </div>
-            <div class="projecttTime">
-              使用期限：
-              <span>2年</span>
-            </div>
-            <div class="owner">业主单位：
-              <span></span>
-            </div>
-            <div class="maintenance">维保单位：
-              <span></span>
-            </div>
-            <div class="regulatory">监管单位：
-              <span></span>
-            </div>
-            <div class="partner">伙伴单位：
-              <span></span>
-            </div>
-          </div>
           <div class="projectPaging">
             <el-pagination background layout="prev, pager, next" :total="projectTotal" :pager-count='projectPagingCount'>
             </el-pagination>
@@ -175,7 +103,57 @@
         </div>
         <div class="userList">
           <div class="addUser">
-            <el-button type="primary">新增用户</el-button>
+            <el-button type="primary" @click="dialogAdduserFormVisible = true">新增用户</el-button>
+            <el-dialog title="新增用户" :visible.sync="dialogAdduserFormVisible">
+              <el-form :model="addUserForm">
+                <el-form-item label="账号" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.account" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="姓名" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.name" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="单位名称" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="单位类型" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="项目名称" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="身份证" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="角色类型" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="角色名称" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="权限区域" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="常住地址" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="头像" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="手机" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="邮箱" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="描述" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                </el-form-item>
+              </el-form>
+              <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogAdduserFormVisible = false">取 消</el-button>
+                <el-button type="primary" @click="sureAddUser()">提 交</el-button>
+              </div>
+            </el-dialog>
             <div class="searchUser">
               <el-input placeholder="搜索用户" prefix-icon="el-icon-search" v-model="userInput">
               </el-input>
@@ -420,6 +398,8 @@
 <script>
 import Title from "../../../components/Title";
 import LinePressing from "../../../components/LinePressing";
+import { getProjects } from "@/apis/user";
+import {getKey} from '@/utils/local'
 export default {
   components: {
     Title,
@@ -437,6 +417,11 @@ export default {
       currentCompanyRole: 0, //控制选中的公司角色
       currentProjectRole: 0, //控制选中的项目角色
       userInput: "", //搜索用户
+      formLabelWidth: "100px", //对话框表格标题名宽度
+      dialogAdduserFormVisible: false, //控制新增用户页面显示，隐藏
+      addUserForm: {
+        //新增用户表单
+      },
       options: [
         {
           value: "选项1",
@@ -459,9 +444,19 @@ export default {
           label: "北京烤鸭"
         }
       ],
-      value: '',//三级联动value
-      importFormChecked:true,//导入单选
+      value: "", //三级联动value
+      importFormChecked: true //导入单选
     };
+  },
+  created() {
+    console.log(getKey('userInfor'))
+    getProjects({userId:getKey('userInfor').userId})
+      .then(res => {
+        console.log(res);
+      })
+      .catch(err => {
+        console.log(err);
+      });
   },
   computed: {
     projectPagingCount() {
@@ -479,6 +474,10 @@ export default {
       } else {
         this.currentProjectRole = index;
       }
+    },
+    sureAddUser() {
+      //确定添加新增用户
+      this.dialogAdduserFormVisible = false;
     }
   }
 };
@@ -529,12 +528,11 @@ export default {
           }
         }
         .projectPaging {
+          width: 100%;
           margin-top: 20px;
           display: flex;
-          .el-pagination {
-            justify-content: center;
-            align-items: center;
-          }
+          justify-content: center;
+          align-items: center;
         }
       }
     }
@@ -548,12 +546,14 @@ export default {
           padding: 10px 20px;
           .enterpriseType {
             span {
+              cursor: pointer;
               display: inline-block;
               padding: 0 15px;
               margin: 0 5px;
               background-color: #fff;
               line-height: 40px;
               height: 40px;
+              border-radius: 5px;
             }
             .currentEnterpriseType {
               background-color: #409eff;
@@ -569,10 +569,12 @@ export default {
             }
             .companyRoleContainer {
               span {
+                cursor: pointer;
                 display: inline-block;
                 padding: 5px 10px;
                 margin: 0 5px;
                 border: 1px solid #e7e7e7;
+                border-radius: 5px;
               }
               .checkedRole {
                 border: 1px solid #409eff;
@@ -588,14 +590,18 @@ export default {
             }
             .projectRoleContainer {
               span {
+                cursor: pointer;
                 display: inline-block;
                 padding: 5px 10px;
                 margin: 0 5px;
                 border: 1px solid #e7e7e7;
+                border-radius: 5px;
               }
               label {
+                cursor: pointer;
                 padding: 5px 10px;
                 background-color: #409eff;
+                border-radius: 5px;
               }
               .checkedRole {
                 border: 1px solid #409eff;
@@ -627,8 +633,8 @@ export default {
               margin: 0 20px 10px 0;
             }
           }
-          .importForm{
-            .el-button{
+          .importForm {
+            .el-button {
               margin: 0 0 0 20px;
             }
           }
@@ -683,6 +689,8 @@ export default {
         }
         .userInforPaging {
           width: 100%;
+          display: flex;
+          justify-content: center;
           position: absolute;
           bottom: 20px;
         }

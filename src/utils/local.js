@@ -3,24 +3,24 @@ import Cookies from 'js-cookie'
 /**
  * 对于本地存储操作的封装
  */
-export function getToken() {
-  return Cookies.get("token")
+export function getSid() {
+  return sessionStorage.getItem('sid')
 }
 
-export function setToken(token) {
-  return Cookies.set("token",token)
+export function setSid(sid) {
+  return Cookies.set("sid",sid)
 }
 
-export function removeToken() {
-  return Cookies.remove("token")
+export function removeSid() {
+  return Cookies.remove("sid")
 }
 
 export function getKey(Infor) {
-  return sessionStorage.get(Infor)
+  return JSON.parse(sessionStorage.getItem(Infor))
 }
 
 export function setKey(key,value) {
-  sessionStorage.key = value
+  sessionStorage.setItem(key,JSON.stringify(value)) 
 }
 
 export function removeKey(key) {
