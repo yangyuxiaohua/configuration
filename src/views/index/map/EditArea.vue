@@ -23,9 +23,9 @@
     </div>
     <div class="toolIcon">
       <div class="toolIconList">
-        <span><img src="../../../assets/imgs/01.jpg" alt="" class="nav-imgs mozgat img1" id="img1" data-name='img1'></span>
+        <!-- <span><img src="../../../assets/imgs/01.jpg" alt="" class="nav-imgs mozgat img1" id="img1" data-name='img1'></span>
         <span><img src="../../../assets/imgs/02.jpg" alt="" class="nav-imgs mozgat img2" data-name='img2'></span>
-        <span><img src="../../../assets/imgs/03.jpg" alt="" class="nav-imgs mozgat img3" data-name='img3'></span>
+        <span><img src="../../../assets/imgs/03.jpg" alt="" class="nav-imgs mozgat img3" data-name='img3'></span> -->
       </div>
     </div>
     <div class="editAreaContainer div-rows-col">
@@ -57,7 +57,7 @@ export default {
               children: [
                 {
                   id: 3,
-                  url: "/index/map/editArea/editCad",
+                  url: "/index/map/editArea/editBuilding",
                   label: "办公楼N1",
                   children: [
                     {

@@ -65,3 +65,7 @@ export function getTime(time) {
     str = `${year}-${month}-${day}`
     return str
 }
+// 上传文件
+export function upload(){
+    console.log(111)
+}

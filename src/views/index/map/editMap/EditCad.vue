@@ -38,12 +38,7 @@ import $ from "jquery";
 import "webpack-jquery-ui";
 import "webpack-jquery-ui/css";
 import {
-  // addEvent,
-  // removeEvent,
-  // prEvent,
-  // addWheelEvent
   getOffset
-  // getChildNode
 } from "@/utils/publictool.js";
 export default {
   data() {
@@ -56,10 +51,6 @@ export default {
       iconList: [], //cad内的图标位置信息
       bgX: 0, //图片盒子在大盒子内的X坐标
       bgY: 0, //图片盒子在大盒子内的Y坐标
-      startX: 0, //图片盒子拖动之前位置
-      startY: 0,
-      endX: 0,
-      endY: 0
     };
   },
   created() {
@@ -218,8 +209,6 @@ export default {
         this.bgX - (x - this.bgX) * (ns - this.scaleSize) / this.scaleSize;
       this.bgY =
         this.bgY - (y - this.bgY) * (ns - this.scaleSize) / this.scaleSize;
-      // this.bgX = this.bgX - (x-this.bgX) *(ns-1) / 1
-      // this.bgY = this.bgY - (x-this.bgY) *(ns-1) / 1
       console.log("点相对图片坐标", x - this.bgX);
       console.log(this.bgY);
       //设置放大的宽度和新坐标
@@ -229,7 +218,6 @@ export default {
       this.iconList = this.iconList.map(item => {
         console.log(11111111111);
         item.y =
-          // 20 * (ns - this.scaleSize) / this.scaleSize +
           item.y + item.y * (ns - this.scaleSize) / this.scaleSize;
         item.x = item.x + item.x * (ns - this.scaleSize) / this.scaleSize;
         console.log((ns - this.scaleSize) / this.scaleSize);

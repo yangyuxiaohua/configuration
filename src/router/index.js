@@ -39,6 +39,10 @@ const routes = [{
           path: "/index/map/editArea/editCad",
           name:"editCad",
           component:()=>import('../views/index/map/editMap/EditCad.vue')
+        },{
+          path: "/index/map/editArea/editBuilding",
+          name:"editBuilding",
+          component:()=>import('../views/index/map/editMap/EditBuilding.vue')
         }]
       },
       {
