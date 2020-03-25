@@ -14,11 +14,11 @@
           <el-button size="mini" type="primary">搜索</el-button>
         </div>
         <div class="projects">
-          <div class="projectInfor">
+          <div class="projectInfor" v-for="(item,index) in projectLists" :key="index">
             <div class="project">
-              <span class="projectName">红河项目</span>
+              <span class="projectName">{{item.siteName}}</span>
               <span>创建时间：
-                <span>2019-02-09</span>
+                <span>{{item.createTime}}</span>
               </span>
             </div>
             <div class="projecttTime">
@@ -39,7 +39,7 @@
             </div>
           </div>
           <div class="projectPaging">
-            <el-pagination background layout="prev, pager, next" :total="projectTotal" :pager-count='projectPagingCount'>
+            <el-pagination background layout="prev, pager, next" :total="projectTotal" :pager-count="pageCount" :page-size='projectCurrentNum' :current-page.sync='projectCurrentPage' @current-change='projectCurrentChange'>
             </el-pagination>
           </div>
         </div>
@@ -106,47 +106,42 @@
             <el-button type="primary" @click="dialogAdduserFormVisible = true">新增用户</el-button>
             <el-dialog title="新增用户" :visible.sync="dialogAdduserFormVisible">
               <el-form :model="addUserForm">
-                <el-form-item label="账号" :label-width="formLabelWidth">
-                  <el-input v-model="addUserForm.account" autocomplete="off"></el-input>
+                <el-form-item label="昵称" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.username" autocomplete="off"></el-input>
                 </el-form-item>
                 <el-form-item label="姓名" :label-width="formLabelWidth">
                   <el-input v-model="addUserForm.name" autocomplete="off"></el-input>
                 </el-form-item>
-                <el-form-item label="单位名称" :label-width="formLabelWidth">
-                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
-                </el-form-item>
-                <el-form-item label="单位类型" :label-width="formLabelWidth">
-                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
-                </el-form-item>
-                <el-form-item label="项目名称" :label-width="formLabelWidth">
-                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
-                </el-form-item>
                 <el-form-item label="身份证" :label-width="formLabelWidth">
-                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                  <el-input v-model="addUserForm.idcard" autocomplete="off"></el-input>
                 </el-form-item>
-                <el-form-item label="角色类型" :label-width="formLabelWidth">
-                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
-                </el-form-item>
-                <el-form-item label="角色名称" :label-width="formLabelWidth">
-                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
-                </el-form-item>
-                <el-form-item label="权限区域" :label-width="formLabelWidth">
-                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
-                </el-form-item>
-                <el-form-item label="常住地址" :label-width="formLabelWidth">
-                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
-                </el-form-item>
-                <el-form-item label="头像" :label-width="formLabelWidth">
-                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                <el-form-item label="密码" :label-width="formLabelWidth">
+                  <el-input v-model="addUserForm.password" autocomplete="off"></el-input>
                 </el-form-item>
                 <el-form-item label="手机" :label-width="formLabelWidth">
-                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                  <el-input v-model="addUserForm.phone" autocomplete="off"></el-input>
                 </el-form-item>
-                <el-form-item label="邮箱" :label-width="formLabelWidth">
-                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                <el-form-item label="系统" :label-width="formLabelWidth">
+                  <el-radio v-model="addUserForm.system" label="1" @change="choseSystem(addUserForm.system)">预警系统</el-radio>
+                  <el-radio v-model="addUserForm.system" label="50" @change="choseSystem(addUserForm.system)">平台系统</el-radio>
                 </el-form-item>
-                <el-form-item label="描述" :label-width="formLabelWidth">
-                  <el-input v-model="addUserForm.logo" autocomplete="off"></el-input>
+                <el-form-item label="单位" :label-width="formLabelWidth">
+                  <el-select v-model="addUserForm.factoryId" placeholder="请选择单位" @change="choseUnit(addUserForm.factoryId)">
+                    <el-option v-for="(item,index) in unitOptions" :key="index" :label="item.value" :value="item.lable">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="角色" :label-width="formLabelWidth">
+                  <el-select v-model="addUserForm.role" placeholder="请选择角色" @change="choseRole(addUserForm.role)">
+                    <el-option v-for="(item,index) in roleOptions" :key="index" :label="item.roleName" :value="item.roleId">
+                    </el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="站点" :label-width="formLabelWidth">
+                  <el-select v-model="addUserForm.site" placeholder="请选择站点" @change="choseSite(addUserForm.site)">
+                    <el-option v-for="(item,index) in siteOptions" :key="index" :label="item.siteName" :value="item.siteId">
+                    </el-option>
+                  </el-select>
                 </el-form-item>
               </el-form>
               <div slot="footer" class="dialog-footer">
@@ -161,232 +156,101 @@
             </div>
           </div>
           <div class="userInforList">
-            <div class="userInfor">
+            <div class="userInfor" v-for="(item,index) in userList" :key="index">
               <div class="userInforHeader">
                 <div class="headPortrait"><img src="" alt=""></div>
                 <div class="PersonalInformation">
-                  <p>张三</p>
-                  <p>项目：
-                    <span>红河项目</span>
+                  <p>
+                    姓名：
+                    <span>{{item.username}}</span>
                   </p>
-                  <p>角色：
-                    <span>项目负责人</span>
+                  <p>电话：
+                    <span>{{item.phone}}</span>
                   </p>
-                  <p>权限区域：
-                    <span>全国</span>
+                  <p>邮箱：
+                    <span>{{item.email}}</span>
                   </p>
-                  <p>手机
-                    <span>1235424415</span>
+                  <p>在职情况：
+                    <span>{{item.leave}}</span>
                   </p>
-                  <p>创建时间：
-                    <span>2019-09-08</span>
-                  </p>
-                  <p>项目描述： 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目
-
+                  <p>
+                    单位：
+                    <span>{{item.factoryName}}</span>
                   </p>
                 </div>
               </div>
-              <div class="personalDescription">
-              </div>
-            </div>
-            <div class="userInfor">
-              <div class="userInforHeader">
-                <div class="headPortrait"><img src="" alt=""></div>
-                <div class="PersonalInformation">
-                  <p>张三</p>
-                  <p>项目：
-                    <span>红河项目</span>
-                  </p>
-                  <p>角色：
-                    <span>项目负责人</span>
-                  </p>
-                  <p>权限区域：
-                    <span>全国</span>
-                  </p>
-                  <p>手机
-                    <span>1235424415</span>
-                  </p>
-                  <p>创建时间：
-                    <span>2019-09-08</span>
-                  </p>
-                  <p>项目描述： 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目
+              <div class="operation">
+                <el-button type="primary" icon="el-icon-edit" circle @click="editUserInfor(item.userId)"></el-button>
+                <el-dialog title="修改信息" :visible.sync="dialogUserInforFormModifyVisible">
+                  <el-form :model="userInforForm">
+                    <el-form-item label="姓名" :label-width="formLabelWidth">
+                      <el-input v-model="userInforForm.name" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="电话" :label-width="formLabelWidth">
+                      <el-input v-model="userInforForm.phone" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="昵称" :label-width="formLabelWidth">
+                      <el-input v-model="userInforForm.username" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="身份证" :label-width="formLabelWidth">
+                      <el-input v-model="userInforForm.idcard" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="离职" :label-width="formLabelWidth">
+                      <el-input v-model="userInforForm.leave" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="邮箱" :label-width="formLabelWidth">
+                      <el-input v-model="userInforForm.email" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="描述" :label-width="formLabelWidth">
+                      <el-input v-model="userInforForm.description" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="系统" :label-width="formLabelWidth">
+                      <el-radio v-model="userInforForm.system" label="1" @change="editChoseSystem(userInforForm.system)">预警系统</el-radio>
+                      <el-radio v-model="userInforForm.system" label="50" @change="editChoseSystem(userInforForm.system)">平台系统</el-radio>
+                    </el-form-item>
+                    <el-form-item label="单位" :label-width="formLabelWidth">
+                      <el-select v-model="userInforForm.unit" placeholder="请选择单位" @change="editChoseUnit(userInforForm.unit)">
+                        <el-option v-for="(item,index) in unitLists" :key="index" :label="item.name" :value="item.factoryId">
+                        </el-option>
+                      </el-select>
+                    </el-form-item>
+                    <el-form-item label="角色" :label-width="formLabelWidth">
+                      <el-select v-model="userInforForm.role" placeholder="">
+                        <el-option v-for="(item,index) in roleLists" :key="index" :label="item.roleName" :value="item.roleId">
+                          <span style="float: left;color:#000">{{ item.roleName }}</span>
+                          <span style="float: right;">
+                            <el-button type="success" icon="el-icon-check" circle size="mini" @click="addUserRole($event,item)"></el-button>
+                            <el-button type="danger" icon="el-icon-delete" circle size="mini" @click="deleteUserRole($event,item.userRoleId)"></el-button>
+                          </span>
+                        </el-option>
+                      </el-select>
+                    </el-form-item>
 
-                  </p>
-                </div>
-              </div>
-              <div class="personalDescription">
-              </div>
-            </div>
-            <div class="userInfor">
-              <div class="userInforHeader">
-                <div class="headPortrait"><img src="" alt=""></div>
-                <div class="PersonalInformation">
-                  <p>张三</p>
-                  <p>项目：
-                    <span>红河项目</span>
-                  </p>
-                  <p>角色：
-                    <span>项目负责人</span>
-                  </p>
-                  <p>权限区域：
-                    <span>全国</span>
-                  </p>
-                  <p>手机
-                    <span>1235424415</span>
-                  </p>
-                  <p>创建时间：
-                    <span>2019-09-08</span>
-                  </p>
-                  <p>项目描述： 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目
+                    <el-form-item label="站点" :label-width="formLabelWidth">
+                      <el-select v-model="userInforForm.site" placeholder="">
+                        <el-option v-for="(item,index) in siteLists" :key="index" :label="item.siteName" :value="item.siteId">
+                          <span style="float: left;color:#000">{{ item.siteName }}</span>
+                          <span style="float: right;">
+                            <el-button type="success" icon="el-icon-check" circle size="mini" @click="addUserSite($event,item)"></el-button>
+                            <el-button type="danger" icon="el-icon-delete" circle size="mini" @click="deleteUserSite($event,item.authServiceId)"></el-button>
+                          </span>
+                        </el-option>
+                      </el-select>
+                    </el-form-item>
+                  </el-form>
+                  <div slot="footer" class="dialog-footer">
+                    <el-button @click="dialogUserInforFormModifyVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="sureModifyUserInfo()">确 定</el-button>
+                  </div>
+                </el-dialog>
 
-                  </p>
-                </div>
+                <el-button type="danger" icon="el-icon-delete" circle @click="deleteUserInfor(item.userId)"></el-button>
               </div>
-              <div class="personalDescription">
-              </div>
-            </div>
-            <div class="userInfor">
-              <div class="userInforHeader">
-                <div class="headPortrait"><img src="" alt=""></div>
-                <div class="PersonalInformation">
-                  <p>张三</p>
-                  <p>项目：
-                    <span>红河项目</span>
-                  </p>
-                  <p>角色：
-                    <span>项目负责人</span>
-                  </p>
-                  <p>权限区域：
-                    <span>全国</span>
-                  </p>
-                  <p>手机
-                    <span>1235424415</span>
-                  </p>
-                  <p>创建时间：
-                    <span>2019-09-08</span>
-                  </p>
-                  <p>项目描述： 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目
-
-                  </p>
-                </div>
-              </div>
-              <div class="personalDescription">
-              </div>
-            </div>
-            <div class="userInfor">
-              <div class="userInforHeader">
-                <div class="headPortrait"><img src="" alt=""></div>
-                <div class="PersonalInformation">
-                  <p>张三</p>
-                  <p>项目：
-                    <span>红河项目</span>
-                  </p>
-                  <p>角色：
-                    <span>项目负责人</span>
-                  </p>
-                  <p>权限区域：
-                    <span>全国</span>
-                  </p>
-                  <p>手机
-                    <span>1235424415</span>
-                  </p>
-                  <p>创建时间：
-                    <span>2019-09-08</span>
-                  </p>
-                  <p>项目描述： 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目
-
-                  </p>
-                </div>
-              </div>
-              <div class="personalDescription">
-              </div>
-            </div>
-            <div class="userInfor">
-              <div class="userInforHeader">
-                <div class="headPortrait"><img src="" alt=""></div>
-                <div class="PersonalInformation">
-                  <p>张三</p>
-                  <p>项目：
-                    <span>红河项目</span>
-                  </p>
-                  <p>角色：
-                    <span>项目负责人</span>
-                  </p>
-                  <p>权限区域：
-                    <span>全国</span>
-                  </p>
-                  <p>手机
-                    <span>1235424415</span>
-                  </p>
-                  <p>创建时间：
-                    <span>2019-09-08</span>
-                  </p>
-                  <p>项目描述： 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目
-
-                  </p>
-                </div>
-              </div>
-              <div class="personalDescription">
-              </div>
-            </div>
-            <div class="userInfor">
-              <div class="userInforHeader">
-                <div class="headPortrait"><img src="" alt=""></div>
-                <div class="PersonalInformation">
-                  <p>张三</p>
-                  <p>项目：
-                    <span>红河项目</span>
-                  </p>
-                  <p>角色：
-                    <span>项目负责人</span>
-                  </p>
-                  <p>权限区域：
-                    <span>全国</span>
-                  </p>
-                  <p>手机
-                    <span>1235424415</span>
-                  </p>
-                  <p>创建时间：
-                    <span>2019-09-08</span>
-                  </p>
-                  <p>项目描述： 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目
-
-                  </p>
-                </div>
-              </div>
-              <div class="personalDescription">
-              </div>
-            </div>
-            <div class="userInfor">
-              <div class="userInforHeader">
-                <div class="headPortrait"><img src="" alt=""></div>
-                <div class="PersonalInformation">
-                  <p>张三</p>
-                  <p>项目：
-                    <span>红河项目</span>
-                  </p>
-                  <p>角色：
-                    <span>项目负责人</span>
-                  </p>
-                  <p>权限区域：
-                    <span>全国</span>
-                  </p>
-                  <p>手机
-                    <span>1235424415</span>
-                  </p>
-                  <p>创建时间：
-                    <span>2019-09-08</span>
-                  </p>
-                  <p>项目描述： 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目 项目
-                  </p>
-                </div>
-              </div>
-
             </div>
 
           </div>
           <div class="userInforPaging">
-            <el-pagination background layout="prev, pager, next" :total="projectTotal" :pager-count='projectPagingCount'>
+            <el-pagination background layout="prev, pager, next" :total="userListTotal" :pager-count="pageCount" :page-size='userCurrentNum' :current-page.sync='userCurrentPage' @current-change='userCurrentChange'>
             </el-pagination>
           </div>
         </div>
@@ -398,8 +262,24 @@
 <script>
 import Title from "../../../components/Title";
 import LinePressing from "../../../components/LinePressing";
-import { getProjects } from "@/apis/user";
-import {getKey} from '@/utils/local'
+import {
+  // getProjects,
+  addUser,
+  getlistUsers,
+  deletedUser,
+  getUserInfor,
+  addUserRole,
+  addUserSite,
+  deletedUserRole,
+  deletedUserSite,
+  updateUser,
+  pageSelfAllSitesByFactory
+} from "@/apis/user";
+import { getKey } from "@/utils/local";
+// import { getTime } from "@/utils/publictool";
+import { getFactoryList } from "@/apis/unit";
+import { getRoles } from "@/apis/role";
+import { getListFactorySite } from "@/apis/unitSite";
 export default {
   components: {
     Title,
@@ -408,8 +288,6 @@ export default {
   data() {
     return {
       searchProject: "",
-      projectTotal: 90,
-      projectCount: "5",
       enterpriseTypeList: ["政企", "维保", "伙伴", "监管"], //企业类型列表
       enterpriseTypeNum: 0, //控制选中的企业类型
       companyRoleList: ["项目经理", "负责人", "法人"], //公司角色
@@ -421,7 +299,19 @@ export default {
       dialogAdduserFormVisible: false, //控制新增用户页面显示，隐藏
       addUserForm: {
         //新增用户表单
+        factoryId: "",
+        idcard: "",
+        name: "",
+        password: "",
+        phone: "",
+        username: "",
+        // system: "",
+        userRoles: [],
+        userSites: []
       },
+      unitOptions: [], //单位数组
+      roleOptions: [], // 角色数组
+      siteOptions: [], // 单位站点数组
       options: [
         {
           value: "选项1",
@@ -445,25 +335,50 @@ export default {
         }
       ],
       value: "", //三级联动value
-      importFormChecked: true //导入单选
+      importFormChecked: true, //导入单选
+      projectLists: [], //项目列表
+      projectTotal: 0, //项目列表总条数
+      projectCurrentNum: 4, //项目列表每页展示的条数
+      projectCurrentPage: 1, //项目列表当前页
+      pageCount: 5, //超过5页折叠
+      userListTotal: 0, // 用户列表分页数据总条数
+      userCurrentPage: 1, //当前页码
+      userCurrentNum: 8, //每页显示的条数
+      userList: [], //用户列表
+      dialogUserInforFormModifyVisible: false, //用户信息
+      userInforForm: {},
+      roleLists: [], // 编辑角色数组
+      unitLists: [], // 编辑单位数组
+      siteLists: [] // 编辑站点数组
     };
   },
   created() {
-    console.log(getKey('userInfor'))
-    getProjects({userId:getKey('userInfor').userId})
-      .then(res => {
-        console.log(res);
-      })
-      .catch(err => {
-        console.log(err);
-      });
+    this.projectCurrentChange(this.projectCurrentPage)
+    // 获取用户列表
+    this.userCurrentChange(this.userCurrentPage);
   },
-  computed: {
-    projectPagingCount() {
-      return parseInt(this.projectCount);
-    }
-  },
+  computed: {},
   methods: {
+    //站点分页
+    projectCurrentChange(val) {
+      val = val <= 0 ? 1 : val;
+      pageSelfAllSitesByFactory({
+        size: this.projectCurrentNum,
+        start: val,
+        factoryId: getKey("userInfor".userId)
+      })
+        .then(res => {
+          if (res.httpStatus == 200) {
+            this.projectTotal = res.result.countRows;
+            this.projectLists = res.result.result;
+            console.log(res);
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    //获取用户列表
     checkedEnterpriseType(index) {
       //选择企业类型
       this.enterpriseTypeNum = index;
@@ -477,7 +392,358 @@ export default {
     },
     sureAddUser() {
       //确定添加新增用户
-      this.dialogAdduserFormVisible = false;
+      // 511121299539634523
+      // 15298745895
+      console.log(JSON.stringify(this.addUserForm));
+      addUser(this.addUserForm)
+        .then(res => {
+          console.log(res);
+          if (res.httpStatus == 200) {
+            this.$message({
+              type: "success",
+              message: "添加成功"
+            });
+            this.userCurrentChange(this.userCurrentPage);
+          } else {
+            this.$message({
+              type: "warning",
+              message: "请求失败"
+            });
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    // 选择系统之后，根据系统等到单位
+    choseSystem(value) {
+      getFactoryList({ system: value }) //获取单位数组
+        .then(res => {
+          if (res.httpStatus == 200) {
+            this.unitOptions = res.result.map(item => {
+              return { lable: item.factoryId, value: item.name };
+            });
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+      getRoles({ system: value }) //获取角色数组
+        .then(res => {
+          console.log("角色", res);
+          if (res.httpStatus == 200) {
+            this.roleOptions = res.result;
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    choseUnit(value) {
+      console.log("选择单位", value);
+      // 获取单位站点
+      getListFactorySite({ factoryId: value })
+        .then(res => {
+          console.log("单位站点", res);
+          if (res.httpStatus == 200) {
+            this.siteOptions = res.result;
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    choseRole(roleId) {
+      //选中角色储存参数
+      let chosedRole = this.roleOptions.filter(item => {
+        if (item.roleId == roleId) {
+          return item;
+        }
+      });
+      console.log(chosedRole);
+      this.addUserForm.userRoles = [
+        {
+          factoryId: this.addUserForm.factoryId,
+          roleCode: chosedRole[0].roleCode,
+          roleId: chosedRole[0].roleId,
+          system: chosedRole[0].system
+        }
+      ];
+    },
+    choseSite(siteId) {
+      //选中单位站点储存参数
+      let chosedSite = this.siteOptions.filter(item => {
+        if (item.siteId == siteId) {
+          return item;
+        }
+      });
+      this.addUserForm.userSites = [
+        {
+          factoryAuth: "1",
+          factoryId: this.addUserForm.factoryId,
+          siteId: chosedSite[0].siteId
+        }
+      ];
+    },
+    //删除用户
+    deleteUserInfor(userId) {
+      this.$confirm("此操作将永久删除该资源, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      })
+        .then(() => {
+          deletedUser({ userId })
+            .then(res => {
+              if (res.httpStatus == 200) {
+                this.$message({
+                  type: "success",
+                  message: "删除成功"
+                });
+                this.userCurrentPage =
+                  this.userCurrentPage >
+                  (this.userListTotal - 1) / this.userCurrentNum
+                    ? this.userCurrentPage - 1
+                    : this.userCurrentPage;
+                this.userCurrentChange(this.userCurrentPage);
+              } else {
+                this.$message({
+                  type: "warning",
+                  message: "请求失败"
+                });
+              }
+            })
+            .catch(err => {
+              console.log(err);
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    },
+    //编辑页面
+    editUserInfor(userId) {
+      //修改用户信息
+      console.log("个人id", userId);
+      this.dialogUserInforFormModifyVisible = true;
+      getUserInfor({ userId }) //获取当前选中用户的信息
+        .then(res => {
+          console.log(res);
+          if (res.httpStatus == 200) {
+            this.userInforForm = res.result;
+            console.log("个人信息", res.result);
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    editChoseSystem(value) {
+      //选中系统之后
+      getRoles({ system: value }) //获取角色数组
+        .then(res => {
+          console.log("角色", res);
+          if (res.httpStatus == 200) {
+            this.roleLists = res.result;
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+      //获取单位数组
+      getFactoryList({ system: value }) //获取单位数组
+        .then(res => {
+          if (res.httpStatus == 200) {
+            this.unitLists = res.result;
+            console.log("单位", this.unitLists);
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+
+    // 编辑用户信息里面的添加用户角色
+    addUserRole(e, role) {
+      console.log(this.userInforForm.unit);
+      e.stopPropagation();
+
+      this.$confirm("确定增加, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "info"
+      })
+        .then(() => {
+          if (
+            this.userInforForm.unit == "" ||
+            this.userInforForm.unit == undefined
+          ) {
+            this.$message({
+              type: "warning",
+              message: "请选择单位"
+            });
+          } else {
+            addUserRole({
+              ...role,
+              factoryId: this.userInforForm.unit,
+              userId: this.userInforForm.userId
+            })
+              .then(res => {
+                if (res.httpStatus == 200) {
+                  this.$message({
+                    type: "success",
+                    message: "添加成功"
+                  });
+                }
+              })
+              .catch(err => {
+                console.log(err);
+                this.$message({
+                  type: "warning",
+                  message: "请求失败"
+                });
+              });
+          }
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消操作"
+          });
+        });
+    },
+    //编辑用户信息里面的删除用户角色
+    deleteUserRole(e, userRoleId) {
+      e.stopPropagation();
+      this.$confirm("确定删除, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "info"
+      })
+        .then(() => {
+          deletedUserRole({ userRoleId })
+            .then(res => {
+              if (res.httpStatus == 200) {
+                this.$message({
+                  type: "success",
+                  message: "删除"
+                });
+              }
+            })
+            .catch(err => {
+              console.log(err);
+              this.$message({
+                type: "warning",
+                message: "请求失败"
+              });
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消删除"
+          });
+        });
+    },
+    //编辑用户信息里面的选择单位
+    editChoseUnit(value) {
+      // 获取单位站点
+      getListFactorySite({ factoryId: value })
+        .then(res => {
+          if (res.httpStatus == 200) {
+            this.siteLists = res.result;
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    //编辑用户信息里面的增加站点
+    addUserSite(e, site) {
+      e.stopPropagation();
+      this.$confirm("确定增加, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "info"
+      })
+        .then(() => {
+          addUserSite({
+            ...site,
+            factoryAuth: "1"
+          })
+            .then(res => {
+              if (res.httpStatus == 200) {
+                this.$message({
+                  type: "success",
+                  message: "添加成功"
+                });
+              }
+            })
+            .catch(err => {
+              console.log(err);
+              this.$message({
+                type: "warning",
+                message: "请求失败"
+              });
+            });
+        })
+        .catch(() => {
+          this.$message({
+            type: "info",
+            message: "已取消操作"
+          });
+        });
+    },
+    //编辑用户信息里面的删除站点
+    deleteUserSite(e, authServiceId) {
+      e.stopPropagation();
+      deletedUserSite({ authServiceId });
+    },
+    // 确定修改
+    sureModifyUserInfo() {
+      updateUser(this.userInforForm)
+        .then(res => {
+          if (res.httpStatus == 200) {
+            this.$message({
+              type: "success",
+              message: "修改成功"
+            });
+          }
+        })
+        .catch(err => {
+          console.log(err);
+          this.$message({
+            type: "warning",
+            message: "请求失败"
+          });
+        });
+    },
+    // 分页
+    userCurrentChange(val) {
+      val = val <= 0 ? 1 : val;
+      getlistUsers({ size: this.userCurrentNum, start: val })
+        .then(res => {
+          console.log(res);
+          if (res.httpStatus == 200) {
+            this.userList = res.result.result;
+            this.userListTotal = parseInt(res.result.countRows);
+          } else {
+            this.$message({
+              type: "warning",
+              message: "请求失败1"
+            });
+          }
+        })
+        .catch(err => {
+          console.log(err);
+          this.$message({
+            type: "warning",
+            message: "请求失败2"
+          });
+        });
     }
   }
 };
@@ -489,6 +755,7 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
+
   .title {
     width: 100%;
     flex: 0 0 56px;
@@ -643,6 +910,9 @@ export default {
       .userList {
         padding: 10px 0;
         position: relative;
+        .el-select {
+          width: 100%;
+        }
         .addUser {
           height: 30px;
           display: flex;
@@ -683,6 +953,13 @@ export default {
               }
               .PersonalInformation {
                 flex: 1;
+              }
+            }
+            .operation {
+              display: flex;
+              justify-content: flex-end;
+              .el-button {
+                padding: 5px;
               }
             }
           }

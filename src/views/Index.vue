@@ -106,7 +106,10 @@ export default {
   created() {
     //刷新之后默认打开菜单
     this.defaultActive = this.$route.path;
+  },
+  mounted(){
     this.userName = getKey("userInfor").username;
+
   },
   computed: {},
   methods: {

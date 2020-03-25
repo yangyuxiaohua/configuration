@@ -12,3 +12,5 @@ export const updateEquipment = params=>req.post('/device/updatedDevice',params)
 export const getListDeviceBySites = params=>req.post('/device/listDeviceBySites',params)
 // 按照单位主键 或 系统 查询 一批设备（超级管理员接口）
 export const getListDevices = params=>req.post('/device/listDevices',params)
+// 分页按照单位主键 或 系统 查询 一批设备（超级管理员接口）
+export const pageDevices = params=>req.post('/device/pageDevices',params)

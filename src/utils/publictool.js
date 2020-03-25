@@ -60,12 +60,41 @@ export function getTime(time) {
     let str = ''
     let date = new Date(time)
     let year = date.getFullYear()
-    let month = date.getMonth() +1
+    let month = date.getMonth() + 1
     let day = date.getDate()
     str = `${year}-${month}-${day}`
     return str
 }
 // 上传文件
-export function upload(){
+export function upload() {
     console.log(111)
+}
+
+//数组排序
+export function compare(property) {
+    return function (a, b) {
+        var value1 = parseInt(a[property]);
+        var value2 = parseInt(b[property]);
+        return value1 - value2;
+    }
+}
+// 截取某一串字符串
+export function getStr(str, word) {
+
+    if (str.indexOf(word) !== -1) {
+
+        str = str.substr(str.lastIndexOf(word) + word.length)
+
+    }
+    return str
+}
+//将数组深度转字符串或转回数组
+export function getObjStr (obj){
+     if(typeof obj == 'string'){
+         console.log('字符串')
+       return JSON.parse(JSON.parse(new String(JSON.stringify(obj)).toString())) 
+    }else{
+        console.log('不是字符串')
+        return new String(JSON.stringify(obj)).toString()
+     }
 }

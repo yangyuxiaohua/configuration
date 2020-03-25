@@ -26,7 +26,10 @@
         <div>
           <span>图片</span>
           <div>
-            <el-button type="primary">点击上传</el-button>
+            <el-upload class="avatar-uploader" :action="getIp" :show-file-list="false" :on-success="handleAvatarSuccess" :before-upload="beforeAvatarUpload">
+              <!-- <i class="el-icon-plus avatar-uploader-icon"></i> -->
+              <el-button type="primary">点击上传</el-button>
+            </el-upload>
           </div>
         </div>
         <div class="saveBtn">
@@ -39,8 +42,9 @@
 
 <script>
 import { getOffset, getObjStr } from "@/utils/publictool.js";
-import { updateBuild } from "@/apis/bmap.js";
-import { getKey,setKey } from "@/utils/local.js";
+import { updateAreaBuild } from "@/apis/bmap.js";
+import { getKey, setKey } from "@/utils/local.js";
+import { ip } from "@/apis/upload.js";
 import $ from "jquery";
 import "webpack-jquery-ui";
 import "webpack-jquery-ui/css";
@@ -50,7 +54,7 @@ export default {
       pointX: 0, //鼠标点
       pointY: 0,
       pointArr: [], // 存放坐标的数组
-      savaPointArr:[],  //存放坐标和缩放比的数组
+      savaPointArr: [], //存放坐标和缩放比的数组
       can: {}, //画布1
       ctx: {},
       canSave: {}, //画布2
@@ -72,15 +76,22 @@ export default {
       startX: 0, //图片盒子拖动之前位置
       startY: 0,
       endX: 0,
-      endY: 0
+      endY: 0,
+      bgcImg: ""
     };
   },
   created() {
     // 初始化点位
     if (getKey("currentMsg").points || getKey("currentMsg").points !== "null") {
-      this.pointArr = getKey("currentMsg").points ;
+      this.pointArr = getKey("currentMsg").points;
     }
-    console.log(this.pointArr)
+    // 初始化背景图片
+    if (
+      getKey("currentMsg").allMsg.backgroundUrl ||
+      getKey("currentMsg").allMsg.backgroundUrl !== "null"
+    ) {
+      this.bgcImg = getKey("currentMsg").allMsg.backgroundUrl;
+    }
   },
   mounted() {
     this.initNs();
@@ -90,7 +101,7 @@ export default {
       start: function(event) {
         that.startX = event.pageX;
         that.startY = event.pageY;
-      },  
+      },
       stop: function(event) {
         that.endX = event.pageX;
         that.endY = event.pageY;
@@ -99,7 +110,12 @@ export default {
       }
     });
     //初始化视图
-    this.drawctxSave()
+    this.drawctxSave();
+  },
+  computed: {
+    getIp() {
+      return ip;
+    }
   },
   beforeUpdate() {},
   updated() {
@@ -124,7 +140,7 @@ export default {
     startEdit() {
       document.getElementById("canvas").style.cursor = "crosshair"; //改变鼠标样式
       this.pointArr = [];
-      this.savePointArr = []
+      this.savePointArr = [];
       this.ctxSave.clearRect(0, 0, this.canvasW, this.canvasH);
       this.flag = true;
     },
@@ -167,7 +183,7 @@ export default {
               "rgba(102,168,255,1)"
             );
             this.pointArr.push({ x: piX, y: piY });
-            this.savaPointArr.push({ x: piX, y: piY,size:this.scaleSize });
+            this.savaPointArr.push({ x: piX, y: piY, size: this.scaleSize });
             this.canvasSave(this.pointArr); //保存点线同步到另一个canvas
           }
         }
@@ -346,41 +362,60 @@ export default {
       document.getElementById("imgBox").style.left = this.bgX + "px";
       document.getElementById("imgBox").style.top = this.bgY + "px";
     },
-    // 保存上传按钮
+    // 保存按钮
     savePoints() {
       console.log(this.savaPointArr);
-      let arr = this.savaPointArr.map(item=>{
-        return{
-          x:item.x /item.size,y:item.y/item.size
-        }
-      })
+      let arr = this.savaPointArr.map(item => {
+        return {
+          x: item.x / item.size,
+          y: item.y / item.size
+        };
+      });
       //点坐标/缩放比为原始坐标
-      updateBuild({
-        buildId: getKey("currentMsg").currentId,
+      updateAreaBuild({
+        regionId: getKey("currentMsg").currentId,
         points: getObjStr(arr)
       })
         .then(res => {
           if (res.httpStatus == 200) {
-              // this.pointArr = this.overlays;
-              setKey('currentMsg',{
-                currentId:getKey('currentMsg').currentId,
-                points:arr
-              })
-              this.$message({
-                type: "success",
-                message: "保存成功"
-              });
-            } else {
-              this.$message({
-                type: "warning",
-                message: "网络请求失败"
-              });
-            }
+            // this.pointArr = this.overlays;
+            setKey("currentMsg", {
+              currentId: getKey("currentMsg").currentId,
+              points: arr
+            });
+            this.$message({
+              type: "success",
+              message: "保存成功"
+            });
+          } else {
+            this.$message({
+              type: "warning",
+              message: "网络请求失败"
+            });
+          }
         })
         .catch(err => {
           console.log(err);
         });
       // console.log(getKey("currentMsg"));
+    },
+    // 上传
+    // 上传成功
+    handleAvatarSuccess(res, file) {
+      console.log(res, file)
+    },
+    // 上传之前
+    beforeAvatarUpload(file) {
+      console.log(file);
+      // const isJPG = file.type === "image/jpeg";
+      // const isLt2M = file.size / 1024 / 1024 < 2;
+      // if (!isJPG) {
+      //   this.$message.error("上传图片只能是 JPG 格式!");
+      // }
+      // if (!isLt2M) {
+      //   this.$message.error("上传图片大小不能超过 2MB!");
+      // }
+      // return isJPG && isLt2M;
     }
   }
 };

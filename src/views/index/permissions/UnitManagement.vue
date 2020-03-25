@@ -54,7 +54,13 @@
               <div class="unitInfor">
                 <p class="unitName">{{item.name}}</p>
                 <p class="CreateTime">创建时间：
-                  <span>{{item.CreateTime}}</span>
+                  <span>{{item.createTime}}</span>
+                </p>
+                <p>邮箱：
+                  <span>{{item.email}}</span>
+                </p>
+                <p>描述：
+                  <span>{{item.describe}}</span>
                 </p>
               </div>
               <!-- <div class="timeLength">
@@ -67,7 +73,7 @@
           </div>
 
           <div class="systemPaging">
-            <el-pagination background layout="prev, pager, next" :total="unitTotal" :pager-count='unitPagingCount'>
+            <el-pagination background layout="prev, pager, next" :total="unitTotal" :pager-count='unitPagingCount' :page-size='unitNum' :current-page.sync='unitCurrentPage' @current-change='unitCurrentChange'>
             </el-pagination>
           </div>
         </div>
@@ -141,7 +147,7 @@
             </div>
           </div>
           <div class="areaPaging">
-            <el-pagination background layout="prev, pager, next" :total="areaTotal" :pager-count='unitPagingCount'>
+            <el-pagination background layout="prev, pager, next" :total="areaTotal" :pager-count='unitPagingCount' @current-change='changeAreaPage' :page-size='areaCurrentNum' :current-page.sync='areaCurrentPage'>
             </el-pagination>
           </div>
         </div>
@@ -155,12 +161,14 @@ import Title from "../../../components/Title";
 import { addFactory } from "@/apis/unit";
 import {
   addFactorySite,
-  getListFactorySite,
+  // getListFactorySite,
   deletedFactorySite
 } from "@/apis/unitSite";
 import { getKey } from "@/utils/local";
-import { getTime } from "@/utils/publictool";
-// import moment from 'moment'
+// import { getTime } from "@/utils/publictool";
+// import { getUserInfor } from "@/apis/user";
+import { pageFactory } from "@/apis/unit";
+import { pageFactorySite } from "@/apis/unitSite";
 export default {
   components: {
     Title
@@ -171,8 +179,10 @@ export default {
       enterpriseTypeNum: 0,
       enterpriseTypeList: ["政企", "维保", "伙伴", "监管"],
       searchUnit: "", //搜索单位
-      unitTotal: 90, //单位分页总数
+      unitTotal: 0, //单位分页总数
       unitPagingCount: 5, //单位分页显示页码数
+      unitNum: 4,
+      unitCurrentPage: 1,
       //控制新增单位
       dialogUnitFormVisible: false,
       formLabelWidth: "100px", //对话框宽
@@ -184,32 +194,7 @@ export default {
         email: "",
         phone: ""
       },
-      unitList: [
-        {
-          name: "业主单位",
-          CreateTime: "2017-02-01",
-          timeLength: "2年",
-          discripition: "asdsjancbcxmbcbc"
-        },
-        {
-          name: "业主单位",
-          CreateTime: "2017-02-01",
-          timeLength: "2年",
-          discripition: "asdsjancbcxmbcbc"
-        },
-        {
-          name: "业主单位",
-          CreateTime: "2017-02-01",
-          timeLength: "2年",
-          discripition: "asdsjancbcxmbcbc"
-        },
-        {
-          name: "业主单位",
-          CreateTime: "2017-02-01",
-          timeLength: "2年",
-          discripition: "asdsjancbcxmbcbc"
-        }
-      ],
+      unitList: [],
       //新增区域
       dialogAreaFormVisible: false,
       areaForm: {
@@ -220,11 +205,10 @@ export default {
         // siteServer: "",//服务器ip
         // system:'',//系统标识
       },
-      areaList: [
-        { name: "洪河供电局", createTime: "2018-08-02" },
-        { name: "洪河供电局", createTime: "2018-08-02" }
-      ], //区域列表
-      areaTotal: 900, //区域分页总数
+      areaList: [], //区域列表
+      areaTotal: 0, //区域分页总数
+      areaCurrentNum:9,
+      areaCurrentPage:1,
       //修改区域
       dialogAreaModifyFormVisible: false,
       areaModifyForm: {
@@ -237,36 +221,33 @@ export default {
     };
   },
   created() {
-    this.getUnitSites();
+      this.unitCurrentChange(this.unitCurrentPage) //分页获取单位
+      //分页获取单位站点
+      this.changeAreaPage(this.areaCurrentPage)
   },
   methods: {
-    //切换企业类型
-    checkedEnterpriseType(index) {
-      this.enterpriseTypeNum = index;
-    },
-    //获取单位站点
-    getUnitSites() {
-      getListFactorySite({ factoryId: getKey("userInfor").factoryId })
+    //单位分页
+    unitCurrentChange(val) {
+      val = val <= 0 ? 1 : val;
+      pageFactory({
+        size: this.unitNum,
+        start: val,
+        factoryId: getKey("userInfor".factoryId)
+      })
         .then(res => {
           if (res.httpStatus == 200) {
-            this.areaList = res.result.map(item => {
-              item.createTime = getTime(item.createTime);
-              return item;
-            });
-          } else {
-            this.$message({
-              type: "warning",
-              message: "网络请求失败"
-            });
+            this.unitTotal = res.result.countRows;
+            this.unitList = res.result.result;
+            console.log(res);
           }
         })
         .catch(err => {
           console.log(err);
-          this.$message({
-            type: "warning",
-            message: "网络请求失败"
-          });
         });
+    },
+    //切换企业类型
+    checkedEnterpriseType(index) {
+      this.enterpriseTypeNum = index;
     },
     //增加单位的确定
     sureUnit() {
@@ -333,7 +314,7 @@ export default {
             .then(res => {
               console.log(res);
               if (res.httpStatus == 200) {
-                this.getUnitSites()
+                this.getUnitSites();
                 this.$message({
                   type: "success",
                   message: "删除成功!"
@@ -359,7 +340,24 @@ export default {
     sureModifyArea() {
       // this.dialogAreaModifyFormVisible = false;
       // console.log(this.areaModifyForm);
-      
+    },
+    changeAreaPage(val) {
+        val = val <= 0 ? 1 : val;
+      pageFactorySite({
+        size: this.areaCurrentNum,
+        start: val,
+        factoryId: getKey("factoryId")
+      })
+        .then(res => {
+          if (res.httpStatus == 200) {
+            this.areaTotal = res.result.countRows;
+            this.areaList = res.result.result;
+            console.log(res);
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
     }
   }
 };

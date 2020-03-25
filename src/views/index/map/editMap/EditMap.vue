@@ -3,9 +3,6 @@
     <div class="left">
       <div id="hello">
         <div id="dbmap"></div>
-        <div id="result">
-          <el-button type="primary" @click="getResult()">获取结果</el-button>
-        </div>
       </div>
     </div>
     <div class="right">
@@ -25,14 +22,17 @@
       <div>
         <span>中心位置</span>
         <div>
-          <span>124.3645654,36.254671184</span>
+          <span>{{centerLat}}
+            <span v-show="showComma">,</span>
+          </span>
+          <span>{{centerLng}}</span>
         </div>
       </div>
       <div>
         <span>图片</span>
         <div>
           <div>
-            <el-button type="primary" @click="editLocation()">编辑位置</el-button>
+            <el-button type="primary" @click="editLocation()">保存位置</el-button>
           </div>
         </div>
       </div>
@@ -44,6 +44,9 @@
 <script>
 let BMap = window.BMap;
 let BMapLib = window.BMapLib;
+import { updateArea } from "@/apis/bmap";
+import { getKey, setKey } from "@/utils/local";
+import { getObjStr } from "@/utils/publictool";
 export default {
   name: "dbmap",
 
@@ -51,21 +54,30 @@ export default {
     return {
       map: null,
       drawingManager: null,
-      overlays: []
+      overlays: [], //存放点的数组
+      centerLat: "", //中心店经度
+      centerLng: "", //中心店维度
+      showComma: false, //显示逗号
+      showPolyonList: [] // 显示的多边形覆盖物数组
     };
   },
-
+  created() {
+    if (getKey("currentMsg").points || getKey("currentMsg").points !== "null") {
+      this.showPolyonList = getKey("currentMsg").points;
+      console.log(this.showPolyonList);
+    }
+  },
   mounted() {
     this.map = new BMap.Map("dbmap", {
       enableMapClick: false // 禁止底图点击事件
     });
-    this.map.centerAndZoom(new BMap.Point(117.06, 36.67), 18);
+    this.map.centerAndZoom(new BMap.Point(116.331398, 39.897445), 15);
     this.map.enableScrollWheelZoom();
 
     var styleOptions = {
-      strokeColor: "red", //边线颜色。
-      fillColor: "red", //填充颜色。当参数为空时，圆形将没有填充效果。
-      strokeWeight: 3, //边线的宽度，以像素为单位。
+      strokeColor: "blue", //边线颜色。
+      fillColor: "rgba(102,168,255)", //填充颜色。当参数为空时，圆形将没有填充效果。
+      strokeWeight: 2, //边线的宽度，以像素为单位。
       strokeOpacity: 0.8, //边线透明度，取值范围0 - 1。
       fillOpacity: 0.6, //填充的透明度，取值范围0 - 1。
       strokeStyle: "solid" //边线的样式，solid或dashed。
@@ -85,18 +97,76 @@ export default {
       "overlaycomplete",
       this.overlaycomplete
     );
+    // 初始化地图上的多边形覆盖物
+    this.showPolyon();
   },
-
   methods: {
     overlaycomplete(e) {
       this.overlays = e.overlay.to;
     },
-    getResult() {
-      //获取结果
-      console.log("点坐标", this.overlays);
+    //保存位置
+    editLocation() {
+      if (this.overlays.length >= 3) {
+        this.showComma = true;
+        let lat = 0,
+          lng = 0;
+        this.overlays.forEach(item => {
+          lat += item.lat;
+          lng += item.lng;
+        });
+        this.centerLat = lat / this.overlays.length;
+        this.centerLng = lng / this.overlays.length;
+        console.log({
+          id: getKey("currentMsg"),
+          points: getObjStr(this.overlays)
+        });
+        updateArea({
+          areaId: getKey("currentMsg").currentId,
+          points: getObjStr(this.overlays)
+        })
+          .then(res => {
+            if (res.httpStatus == 200) {
+              this.showPolyonList = this.overlays;
+              setKey("currentMsg", {
+                currentId: getKey("currentMsg").currentId,
+                points: this.overlays
+              });
+              this.map.clearOverlays();
+              this.showPolyon();
+              this.$message({
+                type: "success",
+                message: "保存成功"
+              });
+            } else {
+              this.$message({
+                type: "warning",
+                message: "网络请求失败"
+              });
+            }
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      } else {
+        this.showComma = false;
+        this.$message({
+          type: "warning",
+          message: "请绘制区域且坐标点大于三个"
+        });
+      }
     },
-    editLocation(){ //编辑位置
-     
+    //在地图上显示多边形
+    showPolyon() {
+      console.log(this.showPolyonList);
+
+      var polygon = new BMap.Polygon(
+        this.showPolyonList.map(item => {
+          return new BMap.Point(item.lng, item.lat);
+        }),
+        { strokeColor: "blue", strokeWeight: 2, strokeOpacity: 0.5 }
+      );
+
+      this.map.addOverlay(polygon);
     }
   }
 };
@@ -106,7 +176,6 @@ export default {
 .MapWraaper {
   width: 100%;
   height: 100%;
-  // background-color: #000;
   display: flex;
   .left {
     height: 100%;
@@ -120,18 +189,12 @@ export default {
         width: 100%;
         height: 100%;
       }
-      #result {
-        position: absolute;
-        left: 300px;
-        bottom: 10px;
-      }
     }
   }
   .right {
-    flex: 0 0 250px;
+    flex: 0 0 350px;
     border: 1px solid #e7e7e7;
     margin-right: 10px;
-    flex: 0 0 250px;
     border: 1px solid #e7e7e7;
     margin-right: 10px;
     border-radius: 5px;
@@ -150,8 +213,7 @@ export default {
       }
       & > div {
         height: 100%;
-        // flex: 1;
-        width: 160px;
+        width: 260px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -166,32 +228,5 @@ export default {
       text-indent: 10px;
     }
   }
-
-  //   dl,
-  //   dt,
-  //   dd,
-  //   ul,
-  //   li {
-  //     margin: 0;
-  //     padding: 0;
-  //     list-style: none;
-  //   }
-  //   p {
-  //     font-size: 12px;
-  //   }
-  //   dt {
-  //     font-size: 14px;
-  //     font-family: "微软雅黑";
-  //     font-weight: bold;
-  //     border-bottom: 1px dotted #000;
-  //     padding: 5px 0 5px 5px;
-  //     margin: 5px 0;
-  //   }
-  //   dd {
-  //     padding: 5px 0 0 5px;
-  //   }
-  //   li {
-  //     line-height: 28px;
-  //   }
 }
 </style>

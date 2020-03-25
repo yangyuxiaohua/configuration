@@ -1,35 +1,70 @@
 <template>
   <div class="editCadWrapper">
-    <div class="iconList" @click="clickIcon">
-      <span><img src="../../../../assets/imgs/01.jpg" alt="" class="nav-imgs mozgat img1" id="img1" data-name='img1'></span>
-      <span><img src="../../../../assets/imgs/02.jpg" alt="" class="nav-imgs mozgat img2" data-name='img2'></span>
-      <span><img src="../../../../assets/imgs/03.jpg" alt="" class="nav-imgs mozgat img3" data-name='img3'></span>
+    <div class="iconList">
+      <div class='chosedIconBox '>
+        <!-- <img src="../../../../assets/imgs/01.jpg" alt="" class="nav-imgs mozgat img1" id="img1" data-name='img1'>
+        <img src="../../../../assets/imgs/02.jpg" alt="" class="nav-imgs mozgat img2" data-name='img2'>
+        <img src="../../../../assets/imgs/03.jpg" alt="" class="nav-imgs mozgat img3" data-name='img3'> -->
+
+        <div v-for="(item,index) in draggableIconList" :key="index" class="iconBox nav-imgs mozgat">
+          <img :src="item.icon" alt="" class="nav-imgs mozgat" @mousedown="chosedDraggableImg(item)">
+        </div>
+      </div>
+      <div class="unfold">
+        <el-select v-model="iconValue" placeholder="请选择图标类型" @change="chosedIcon()">
+          <el-option v-for="item in IconOptions" :key="item.value" :label="item.label" :value="item.value">
+          </el-option>
+        </el-select>
+      </div>
     </div>
     <div class="left" id="imgBoxWrapper">
       <div id="imgBox" class="div-rows-col" @mousewheel="theZoom($event)">
         <img src="@/assets/imgs/微信截图_20200218103048.png" alt="">
         <div id="iconBox">
-          <!-- <img src="../../../../assets/imgs/01.jpg" alt="" class="icon" id="icon1">
-          <img src="../../../../assets/imgs/01.jpg" alt="" class="icon" id="icon2"> -->
           <img :src="item.path" v-for="item in iconList" :key="item.id" :style="{left:item.x+'px',top:item.y+'px'}">
         </div>
       </div>
     </div>
     <div class="right">
-      <div class="scenarioProperties">场景属性</div>
-      <div>
-        <span>属性名</span>
-        <div><span>属性值</span></div>
+      <div class="rightTop">
+        <div class="scenarioProperties">场景属性</div>
+        <div>
+          <span>属性名</span>
+          <div>
+            <span>属性值</span>
+          </div>
+        </div>
+        <div>
+          <span>场景类型</span>
+          <div>
+            <span>图片型</span>
+          </div>
+        </div>
+        <div>
+          <span>图片</span>
+          <div>
+            <el-button type="primary">点击上传</el-button>
+          </div>
+        </div>
+
       </div>
-      <div>
-        <span>场景类型</span>
-        <div><span>图片型</span></div>
-      </div>
-      <div>
-        <span>图片</span>
-        <div><el-button type="primary">点击上传</el-button></div>
+
+      <div class="rightBottom" v-show="showEquipSelect">
+        <div class="scenarioProperties">
+          <p>衔接场景</p>
+        </div>
+        <div class="saveBtn">
+          <el-button type="primary" @click="savePoints()">保存</el-button>
+        </div>
+        <div class="shoseEquip">
+          <el-select v-model="equipValue" placeholder="请选择图标类型">
+            <el-option v-for="item in equipOptions" :key="item.value" :label="item.label" :value="item.value">
+            </el-option>
+          </el-select>
+        </div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -37,151 +72,93 @@
 import $ from "jquery";
 import "webpack-jquery-ui";
 import "webpack-jquery-ui/css";
-import {
-  getOffset
-} from "@/utils/publictool.js";
+import { getOffset } from "@/utils/publictool.js";
+import { getKey } from "@/utils/local.js";
+import { listNormalIcons, imgIp } from "@/apis/upload";
+import { getListDevices } from "@/apis/equipment";
+import { addFloorDevice,listFloorDevice } from "@/apis/cadMap";
 export default {
   data() {
     return {
+      showIconBox: true,
+      hideIconBox: false,
+      IconOptions: [], // 图标类型下拉框
+      draggableIconList: [], // 用于拖拽的图标数组
+      iconValue: "", // 图标类型value
+      equipValue: "", // 衔接设备value
+      currentIcon: {}, // 当前拖拽图标参数
+      equipOptions: [], //衔接设备下拉框
       imgBoxW: 1000, //图片盒子宽
       imgBoxH: 600, //图片盒子高
       scaleSize: 1, //初始化缩放率
       bigBoxW: 0, //大盒子宽
       bigBoxH: 0, //大盒子高
       iconList: [], //cad内的图标位置信息
+      iconLists: [], //储存拖拽到cad内图片的
       bgX: 0, //图片盒子在大盒子内的X坐标
       bgY: 0, //图片盒子在大盒子内的Y坐标
+      showEquipSelect: false,
+      currentIconX: 0,
+      currentIconY: 0
     };
   },
   created() {
-    this.iconList = [
-      {
-        id: 1,
-        path:
-          "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1582629781782&di=d490d840863d30343df27f62455225b7&imgtype=0&src=http%3A%2F%2Fpic175.nipic.com%2Ffile%2F20180711%2F24144945_161350611036_2.jpg",
-        x: 156,
-        y: 200
-      },
-      {
-        id: 2,
-        path: "https://icweiliimg6.pstatp.com/weili/l/872998720548110343.webp",
-        x: 156,
-        y: 220
-      },
-      {
-        id: 3,
-        path: "https://icweiliimg6.pstatp.com/weili/l/872998720548110343.webp",
-        x: 156,
-        y: 240
-      },
-      {
-        id: 4,
-        path: "https://icweiliimg6.pstatp.com/weili/l/872998720548110343.webp",
-        x: 186,
-        y: 200
-      },
-      {
-        id: 5,
-        path: "https://icweiliimg6.pstatp.com/weili/l/872998720548110343.webp",
-        x: 586,
-        y: 500
-      }
-    ];
+   
+    // 获取cad上显示的设备图标
+    this.getListFloorDevice()
+    // 获取通用图标数组
+    listNormalIcons()
+      .then(res => {
+        console.log(res);
+        if (res.httpStatus == 200) {
+          this.IconOptions = res.result.map(item => {
+            return {
+              value: item.iotSystem,
+              label: item.iotSystemName,
+              icons: item.icons
+            };
+          });
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      });
   },
   mounted() {
     //初始化缩放比例
     let that = this;
     this.initNs();
-    console.log(this.bgX);
-    console.log(this.bgY);
+    // this.draggableImg();
     //图片盒子可以拖拽
     $("#imgBox").draggable({
       start: function(event) {
-        console.log("图片盒子被拖拽", event);
         that.startX = event.pageX;
         that.startY = event.pageY;
-        console.log("startx", that.startX);
-        console.log("starty", that.startY);
-        console.log(that);
       },
       stop: function(event) {
         that.endX = event.pageX;
         that.endY = event.pageY;
-        console.log("endx", that.endX);
-        console.log("endy", that.endY);
         that.bgX = that.bgX + that.endX - that.startX;
         that.bgY = that.bgY + that.endY - that.startY;
-        console.log("that.bgX", that.bgX);
-        console.log("that.bgY", that.bgX);
       }
     });
     //拖拽
-    $(".nav-imgs").draggable({
-      helper: "clone", //如果设置为 "clone"，元素将被克隆，且克隆将被拖拽
-      revert: "invalid", //如果设置为 "invalid"，还原仅在 draggable 未放置在 droppable 上时发生
-      // opacity: 0.7, //不透明度
-      // scope: 'drop', //一个“default”与droppable带有相同的scope值的draggable会被该droppable接受
-      appendTo: "#imgBox",
-      start: function(event, ui) {
-        console.log("拖拽开始", event, ui);
-      },
-      stop: function(event, ui) {
-        console.log("拖拽结束", event, ui);
-        console.log("拖拽结束", ui.position);
-      }
-    });
-    //拖动复制到指定的div当中
-    $("#imgBox").droppable({
-      drop: function(event, ui) {
-        var ct = $(this);
-        var item = $(ui.draggable);
-        var origPos;
-        var ctPos = ct.offset();
 
-        if (item.is(".tapad")) {
-          origPos = ui.offset;
-          ct.append(item);
-        } else {
-          origPos = ui.offset;
-          item = item.clone();
-          ct.append(item);
-          item.removeClass("ui-draggable");
-          item.addClass("tapad");
-          item.draggable({
-            start: function() {
-              console.log("再次拖拽");
-              $("#imgBox").draggable({ disabled: true });
-            },
-            stop: function(event, ui) {
-              console.log("再次拖拽结束");
-              $("#imgBox").draggable({
-                disabled: false
-              });
-              console.log(ui.position);
-            }
-          });
-        }
-        item.css({
-          top: origPos.top - ctPos.top - 1,
-          left: origPos.left - ctPos.left - 1
-        });
-      }
-    });
-    console.log(
-      "小盒子初始位置",
-      document.getElementById("imgBox").offsetTop,
-      document.getElementById("imgBox").offsetLeft
-    );
-    console.log(
-      "小盒子初始大小",
-      document.getElementById("imgBox").offsetHeight,
-      document.getElementById("imgBox").offsetWidth
-    );
+    // console.log(
+    //   "小盒子初始位置",
+    //   document.getElementById("imgBox").offsetTop,
+    //   document.getElementById("imgBox").offsetLeft
+    // );
+    // console.log(
+    //   "小盒子初始大小",
+    //   document.getElementById("imgBox").offsetHeight,
+    //   document.getElementById("imgBox").offsetWidth
+    // );
+  },
+  updated() {
+    this.$nextTick(this.draggableImg);
   },
   methods: {
-    clickIcon() {
-      alert(11);
-    },
     theZoom(e) {
       console.log("滚动之前的位置", this.bgX, this.bgY);
       var $b = document.getElementById("imgBoxWrapper"), //大盒子
@@ -217,8 +194,7 @@ export default {
       // 用一下图片高度的一半*变化率
       this.iconList = this.iconList.map(item => {
         console.log(11111111111);
-        item.y =
-          item.y + item.y * (ns - this.scaleSize) / this.scaleSize;
+        item.y = item.y + item.y * (ns - this.scaleSize) / this.scaleSize;
         item.x = item.x + item.x * (ns - this.scaleSize) / this.scaleSize;
         console.log((ns - this.scaleSize) / this.scaleSize);
         return { id: item.id, path: item.path, x: item.x, y: item.y };
@@ -271,6 +247,179 @@ export default {
 
       console.log(this.bgX);
       console.log(this.bgY);
+    },
+    //选择图标类型
+    chosedIcon() {
+      this.draggableIconList = this.IconOptions.filter(item => {
+        return item.value == this.iconValue;
+      })[0].icons;
+      this.draggableIconList = this.draggableIconList.map(item => {
+        return {
+          deleted: item.deleted,
+          deviceStatus: item.deviceStatus,
+          deviceTypeCode: item.deviceTypeCode,
+          deviceTypeId: item.deviceTypeId,
+          deviceTypeName: item.deviceTypeName,
+          enable: item.enable,
+          icon: imgIp + item.icon,
+          parentId: item.parentId,
+          system: item.system
+        };
+      });
+      console.log(this.draggableIconList);
+      console.log(this.iconValue);
+    },
+    // 开启图片拖拽
+    draggableImg() {
+      let _this = this;
+      $(".nav-imgs").draggable({
+        helper: "clone", //如果设置为 "clone"，元素将被克隆，且克隆将被拖拽
+        revert: "invalid", //如果设置为 "invalid"，还原仅在 draggable 未放置在 droppable 上时发生
+        // opacity: 0.7, //不透明度
+        // scope: 'drop', //一个“default”与droppable带有相同的scope值的draggable会被该droppable接受
+        appendTo: "#imgBox",
+        start: function(event, ui) {
+          console.log("拖拽开始", event, ui);
+        },
+        stop: function(event, ui) {
+          _this.currentIconX = ui.position.left;
+          _this.currentIconY = ui.position.top;
+          // 用了之后再次拖拽失效
+          _this.getDevicesList();
+          _this.showEquipSelect = true;
+          console.log(event, ui);
+          console.log("拖拽结束", ui.position);
+          console.log(this, _this);
+        }
+      });
+      //拖动复制到指定的div当中
+      $("#imgBox").droppable({
+        drop: function(event, ui) {
+          var ct = $(this);
+          var item = $(ui.draggable);
+          var origPos;
+          var ctPos = ct.offset();
+
+          if (item.is(".tapad")) {
+            origPos = ui.offset;
+            ct.append(item);
+          } else {
+            origPos = ui.offset;
+            item = item.clone();
+            ct.append(item);
+            item.removeClass("ui-draggable");
+            item.addClass("tapad");
+            item.draggable({
+              // start: function() {
+              //   console.log("再次拖拽");
+              //   $("#imgBox").draggable({ disabled: true });
+              // },
+              // stop: function(event, ui) {
+              //   console.log("再次拖拽结束");
+              //   $("#imgBox").draggable({
+              //     disabled: false
+              //   });
+              //   console.log(ui.position);
+              // }
+            });
+          }
+          item.css({
+            top: origPos.top - ctPos.top - 1,
+            left: origPos.left - ctPos.left - 1
+          });
+        }
+      });
+    },
+    //选中拖拽图标
+    chosedDraggableImg(icon) {
+      console.log("12341231234");
+      this.currentIcon = icon;
+    },
+    // 拖拽结束之后请求衔接的场景
+    getDevicesList() {
+      console.log(
+        this.currentIcon.deviceTypeCode,
+        getKey("currentMsg").currentId
+      );
+      getListDevices({
+        deviceTypeCode: this.currentIcon.deviceTypeCode,
+        floorId: getKey("currentMsg").currentId
+      })
+        .then(res => {
+          if (res.httpStatus == 200) {
+            this.equipOptions = res.result.map(item => {
+              return {
+                value: item.deviceId,
+                label: item.position + item.mac
+              };
+            });
+            console.log(this.equipOptions);
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    // 绑定value
+    chosedEquip() {},
+    // 保存点位
+    savePoints() {
+      console.log(getKey("currentMsg"));
+      let { areaId, buildId, factoryId, regionId, siteId, system } = getKey(
+        "currentMsg"
+      ).allMsg;
+      if (this.equipValue) {
+        addFloorDevice({
+          floorId: getKey("currentMsg").currentId,
+          areaId,
+          buildId,
+          factoryId,
+          regionId,
+          siteId,
+          system,
+          deviceId: this.equipValue,
+          x: this.currentIconX,
+          y: this.currentIconY
+        })
+          .then(res => {
+            console.log(res);
+            if (res.httpStatus == 200) {
+              this.$message({
+                type: "success",
+                message: "操作成功"
+              });
+            } else {
+              this.$message({
+                type: "warning",
+                message: "网络请求失败"
+              });
+            }
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      } else {
+        this.$message({
+          type: "warning",
+          message: "请选择衔接场景"
+        });
+      }
+    },
+    // 获取图标列表
+    getListFloorDevice() {
+      console.log(getKey("currentMsg").currentId)
+      listFloorDevice({
+        floorId: getKey("currentMsg").currentId
+      })
+        .then(res => {
+          console.log('图标列表',res);
+          if(res.httpStatus == 200){
+            //  this.iconList = res.result
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
     }
   }
 };
@@ -285,7 +434,7 @@ export default {
   position: relative;
   .iconList {
     width: 90%;
-    height: 36px;
+    height: 50px;
     border: 1px solid #e7e7e7;
     position: absolute;
     left: 20px;
@@ -294,10 +443,29 @@ export default {
     z-index: 10;
     display: flex;
     align-items: center;
-    img {
-      width: 30px;
-      height: 30px;
-      margin-left: 10px;
+    .chosedIconBox {
+      display: flex;
+      img {
+        width: 30px;
+        height: 30px;
+        margin-left: 10px;
+      }
+      .iconBox {
+        width: 40px;
+        height: 50px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+    .unfold {
+      position: absolute;
+      right: 10px;
+      .el-select {
+        width: 150px;
+      }
     }
   }
   .left {
@@ -340,37 +508,67 @@ export default {
     }
   }
   .right {
-    flex: 0 0 250px;
-    border: 1px solid #e7e7e7;
-    margin-right: 10px;
-    border-radius: 5px;
-    &>div {
-      height: 50px;
-      display: flex;
-      align-items: center;
-      &>span{
-        display: inline-block;
-        height: 100%;
-        width: 90px;
-        border-bottom: 1px solid #e7e7e7;
-        border-right: 1px solid #e7e7e7;
-        line-height: 50px;
-        text-indent: 10px;
-      }
-      &>div{
-        height: 100%;
-        flex: 1;
+    display: flex;
+    flex-direction: column;
+    // justify-content: space-between;
+    .rightTop {
+      // flex: 0 0 350px;
+      border: 1px solid #e7e7e7;
+      margin-right: 10px;
+      // flex: 0 0 400px;
+      border: 1px solid #e7e7e7;
+      margin-right: 10px;
+      border-radius: 5px;
+      & > div {
+        height: 50px;
         display: flex;
         align-items: center;
-        justify-content: center;
-         border-bottom: 1px solid #e7e7e7;
-        border-right: 1px solid #e7e7e7;
+        & > span {
+          display: inline-block;
+          height: 100%;
+          width: 90px;
+          border-bottom: 1px solid #e7e7e7;
+          border-right: 1px solid #e7e7e7;
+          line-height: 50px;
+          text-indent: 10px;
+        }
+        & > div {
+          height: 100%;
+          width: 260px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-bottom: 1px solid #e7e7e7;
+        }
+      }
+      .scenarioProperties {
+        background-color: #475669;
+        color: #fff;
+        text-indent: 10px;
+        width: 352px;
       }
     }
-    .scenarioProperties {
-      background-color: #475669;
-      color: #fff;
-      text-indent: 10px;
+    .rightBottom {
+      margin-top: 80px;
+      & > div {
+        height: 50px;
+        width: 350px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #e7e7e7;
+        border-right: 1px solid #e7e7e7;
+        border-left: 1px solid #e7e7e7;
+      }
+      .saveBtn,
+      .shoseEquip {
+        justify-content: center;
+      }
+      .scenarioProperties {
+        background-color: #475669;
+        width: 352px;
+        color: #fff;
+        text-indent: 10px;
+      }
     }
   }
 }

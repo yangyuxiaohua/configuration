@@ -13,28 +13,31 @@
           <el-button size="mini" type="primary">搜索</el-button>
         </div>
         <div class="projects">
-          <div class="project">
+          <div class="project" v-for="(item,index) in siteList" :key="index">
             <div class="projectTop">
               <div>
                 项目名：
-                <span></span>
+                <span>{{item.siteName}}</span>
               </div>
               <div>
                 创建时间：
-                <span></span>
+                <span>{{item.createTime}}</span>
               </div>
             </div>
-            <div class="useTime">
+            <div>
+              <el-button type='primary'>编辑位置</el-button>
+            </div>
+            <!-- <div class="useTime">
               使用时限：
               <span></span>
             </div>
             <div class="describe">
               项目描述：
               <span></span>
-            </div>
+            </div> -->
           </div>
           <div class="projectPaging">
-            <el-pagination background layout="prev, pager, next" :total="projectTotal" :pager-count='projectPagingCount'>
+            <el-pagination background layout="prev, pager, next" :total="siteTotal" :pager-count='pageCount' @current-change='changeSitePage' :page-size='sitetNum' :current-page.sync='sitetCurrentPage'>
             </el-pagination>
           </div>
         </div>
@@ -55,25 +58,35 @@
             </div>
           </div>
           <div class="systemPaging">
-            <el-pagination background layout="prev, pager, next" :total="projectTotal" :pager-count='projectPagingCount'>
-            </el-pagination>
+            <!-- <el-pagination background layout="prev, pager, next" :total="projectTotal" :pager-count='projectPagingCount'>
+            </el-pagination> -->
           </div>
         </div>
       </div>
       <div class="right">
-        <el-tree :data="data" node-key="id" default-expand-all :props="defaultProps">
-          <span class="custom-tree-node" slot-scope="{node}">
-            <span>{{node.label }}</span>
-            <span>
-              <span class="el-icon-circle-plus-outline operation" @click="clickBtnCircle($event,node.key)">
-              </span>
-              <span class="el-icon-edit operation" @click="clickBtnEdit($event,node.parent.key)">
-              </span>
-              <span class="el-icon-remove-outline operation" @click="clickBtnRemove($event,node.key)">
-              </span>
-            </span>
-          </span>
-        </el-tree>
+        <div class="unit" v-for="(item,index) in unit" :key="index">
+          <p class="unitName">
+           单位： {{item.name}}
+          </p>
+          <div class="site" v-for="(i,j) in item.sites" :key="j">
+            <p class="siteName"> 站点：{{i.siteName}}</p>
+            <div class="area">
+              <el-tree :data="i.areas" node-key="id" default-expand-all :props="defaultProps">
+                <span class="custom-tree-node" slot-scope="{node}">
+                  <span>{{node.label }}</span>
+                  <span>
+                    <span class="el-icon-circle-plus-outline operation" @click="clickBtnCircle($event,node.key)">
+                    </span>
+                    <span class="el-icon-edit operation" @click="clickBtnEdit($event,node.parent.key)">
+                    </span>
+                    <span class="el-icon-remove-outline operation" @click="clickBtnRemove($event,node.key)">
+                    </span>
+                  </span>
+                </span>
+              </el-tree>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -81,6 +94,9 @@
 
 <script>
 import Title from "../../../components/Title";
+import { pageFactorySite } from "@/apis/unitSite";
+import { getKey } from "@/utils/local";
+import { listSelfFactoryRegionalByUserId } from "@/apis/area";
 export default {
   components: {
     Title
@@ -88,44 +104,12 @@ export default {
   data() {
     return {
       searchArea: "", //搜索区域
-      projectTotal: 90, //总条数
-      projectPagingCount: 5, //显示的页码数
-      data: [
-        {
-          id: 1,
-          label: "一级 1",
-          children: [
-            {
-              id: 2,
-              label: "二级 1-1",
-              children: [
-                {
-                  id: 3,
-                  label: "三级 1-1-1"
-                },
-                {
-                  id: 4,
-                  label: "三级 1-1-2"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          id: 7,
-          label: "一级 2",
-          children: [
-            {
-              id: 5,
-              label: "二级 2-1"
-            },
-            {
-              id: 6,
-              label: "二级 2-2"
-            }
-          ]
-        }
-      ],
+      siteTotal: 10, //总条数
+      sitetNum: 4,
+      sitetCurrentPage: 1,
+      pageCount: 5, //显示的页码数
+      siteList: [],
+      unit: [],
       defaultProps: {
         id: "id",
         children: "children",
@@ -133,7 +117,44 @@ export default {
       }
     };
   },
+  created() {
+    this.changeSitePage(this.sitetCurrentPage);
+    this.getArea();
+  },
   methods: {
+    //站点分页
+    changeSitePage(val) {
+      val = val <= 0 ? 1 : val;
+      pageFactorySite({
+        size: this.sitetNum,
+        start: val,
+        factoryId: getKey("userInfor".factoryId)
+      })
+        .then(res => {
+          if (res.httpStatus == 200) {
+            this.siteTotal = res.result.countRows;
+            this.siteList = res.result.result;
+            // console.log(res);
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    //获取区域
+    getArea() {
+      listSelfFactoryRegionalByUserId({ userId: getKey("userInfor").userId })
+        .then(res => {
+          if (res.httpStatus == 200) {
+            console.log(res);
+            this.unit = res.result;
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+
     //tree添加
     clickBtnCircle(e, key) {
       e.stopPropagation();
@@ -190,6 +211,7 @@ export default {
         line-height: 20px;
         position: relative;
         .project {
+          margin-top: 20px;
           padding: 20px 5px;
           border-bottom: 2px solid #e7e7e7;
           background-color: #fff;
@@ -249,10 +271,24 @@ export default {
     .right {
       height: 100%;
       flex: 1;
+      background-color: #fff;
+      padding: 10px;
       .el-tree {
         .operation {
           font-size: 14px;
           margin-left: 20px;
+        }
+      }
+      .unit{
+        border: 1px solid #f2f2f2;
+        margin-top: 10px;
+        .unitName{
+            font-size: 16px;
+        }
+        .site{
+          .siteName{
+            text-indent: 5px;
+          }
         }
       }
     }

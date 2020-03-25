@@ -15,7 +15,7 @@
                     <el-button size="mini" type="primary" @click="dialogSystemFormVisible = true">新增系统</el-button>
                     <el-dialog title="新增系统" :visible.sync="dialogSystemFormVisible">
                         <el-form :model="systemForm">
-                            <el-form-item label="系统名称" :label-width="formLabelWidth" >
+                            <el-form-item label="系统名称" :label-width="formLabelWidth">
                                 <el-input v-model="systemForm.name" autocomplete="off"></el-input>
                             </el-form-item>
                             <el-form-item label="系统标识" :label-width="formLabelWidth">
@@ -30,105 +30,16 @@
 
                 </div>
                 <div class="systems">
-                    <div class="systemInfor">
+                    <div class="systemInfor" v-for="(item,index) in roleList" :key="index">
                         <div class="system">
-                            <span class="systemName">红河项目</span>
+                            <span class="systemName">{{item.roleName}}</span>
                             <span>创建时间：
-                                <span>2019-02-09</span>
+                                <span>{{item.createTime}}</span>
                             </span>
                         </div>
-                        <div class="systemTime">
-                            使用期限：
-                            <span>2年</span>
-                        </div>
-                        <div class="owner">业主单位：
-                            <span></span>
-                        </div>
-                        <div class="maintenance">维保单位：
-                            <span></span>
-                        </div>
-                        <div class="regulatory">监管单位：
-                            <span></span>
-                        </div>
-                        <div class="partner">伙伴单位：
-                            <span></span>
-                        </div>
                     </div>
-                    <div class="systemInfor">
-                        <div class="system">
-                            <span class="systemName">红河项目</span>
-                            <span>创建时间：
-                                <span>2019-02-09</span>
-                            </span>
-                        </div>
-                        <div class="systemTime">
-                            使用期限：
-                            <span>2年</span>
-                        </div>
-                        <div class="owner">业主单位：
-                            <span></span>
-                        </div>
-                        <div class="maintenance">维保单位：
-                            <span></span>
-                        </div>
-                        <div class="regulatory">监管单位：
-                            <span></span>
-                        </div>
-                        <div class="partner">伙伴单位：
-                            <span></span>
-                        </div>
-                    </div>
-                    <div class="systemInfor">
-                        <div class="system">
-                            <span class="systemName">红河项目</span>
-                            <span>创建时间：
-                                <span>2019-02-09</span>
-                            </span>
-                        </div>
-                        <div class="systemTime">
-                            使用期限：
-                            <span>2年</span>
-                        </div>
-                        <div class="owner">业主单位：
-                            <span></span>
-                        </div>
-                        <div class="maintenance">维保单位：
-                            <span></span>
-                        </div>
-                        <div class="regulatory">监管单位：
-                            <span></span>
-                        </div>
-                        <div class="partner">伙伴单位：
-                            <span></span>
-                        </div>
-                    </div>
-                    <div class="systemInfor">
-                        <div class="system">
-                            <span class="systemName">红河项目</span>
-                            <span>创建时间：
-                                <span>2019-02-09</span>
-                            </span>
-                        </div>
-                        <div class="systemTime">
-                            使用期限：
-                            <span>2年</span>
-                        </div>
-                        <div class="owner">业主单位：
-                            <span></span>
-                        </div>
-                        <div class="maintenance">维保单位：
-                            <span></span>
-                        </div>
-                        <div class="regulatory">监管单位：
-                            <span></span>
-                        </div>
-                        <div class="partner">伙伴单位：
-                            <span></span>
-                        </div>
-                    </div>
-
                     <div class="systemPaging">
-                        <el-pagination background layout="prev, pager, next" :total="projectTotal" :pager-count='projectPagingCount'>
+                        <el-pagination background layout="prev, pager, next" :total="roleTotal" :pager-count="pageCount" :page-size='roleCurrentNum' :current-page.sync='roleCurrentPage' @current-change='roleCurrentChange'>
                         </el-pagination>
                     </div>
                 </div>
@@ -215,6 +126,8 @@ import {
   deleteResource,
   modifyResource
 } from "@/apis/resource";
+import { listPublicRoleIncludeUnable } from "@/apis/role";
+import { getKey } from "@/utils/local";
 import { Message } from "element-ui";
 export default {
   components: {
@@ -223,8 +136,12 @@ export default {
   data() {
     return {
       searchSystem: "",
-      projectTotal: 90,
-      projectPagingCount: 5,
+      roleTotal: 0,
+      pageCount: 5,
+      roleCurrentNum: 5,
+      roleCurrentPage: 1,
+      roleList: [], //显示的角色数组
+      rolePageList: [], //总数
       tableData: [], //资源列表
       //增加系统对话框
       systemForm: {
@@ -255,8 +172,28 @@ export default {
   created() {
     //初始化获取资源列表
     this.getResourceList(1);
+    // this.getRoleList()
+    this.roleCurrentChange(this.roleCurrentPage)
   },
   methods: {
+    //角色分页
+    roleCurrentChange(val) {
+      val = val <= 0 ? 1 : val;
+      console.log(val);
+      listPublicRoleIncludeUnable({
+        system: getKey("userInfor".system)
+      })
+        .then(res => {
+          if (res.httpStatus == 200) {
+            this.roleTotal = res.result.length;
+            console.log(this.roleTotal)
+            this.roleList = res.result.slice(this.roleCurrentNum*(val-1),this.roleCurrentNum*val)
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
     //资源表格修改操作按钮
     handleEdit(a, b) {
       this.dialogResourceFormModifyVisible =
@@ -276,8 +213,8 @@ export default {
               type: "success",
               message: "修改成功!"
             });
-          }else{
-              this.$message({
+          } else {
+            this.$message({
               type: "warning",
               message: "修改失败!"
             });
@@ -364,7 +301,7 @@ export default {
         .then(res => {
           if (res.httpStatus === 200) {
             let resourceList = res.result;
-            console.log(resourceList);
+            // console.log(resourceList);
             this.tableData = resourceList.map(item => {
               return {
                 id: item.resourceId,
@@ -377,7 +314,7 @@ export default {
           } else {
             Message.error("网络请求发生错误，请稍后再试");
           }
-          console.log(res);
+        //   console.log(res);
         })
         .catch(err => {
           console.log(err);
@@ -459,8 +396,8 @@ export default {
         .cell {
           text-align: center;
         }
-        .el-button{
-            margin-left: 10px;
+        .el-button {
+          margin-left: 10px;
         }
       }
     }

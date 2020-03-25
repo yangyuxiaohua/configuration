@@ -14,7 +14,7 @@
     height:100%;
     width:64px;
     height:100%;
-    background-image:url(//api.map.baidu.com/library/DrawingManager/1.4/src/bg_drawing_tool.png);
+    background-image:url(http://api.map.baidu.com/library/DrawingManager/1.4/src/bg_drawing_tool.png);
     cursor:pointer;
 }
 .BMapLib_Drawing .BMapLib_last{
@@ -28,6 +28,7 @@
 }
 .BMapLib_Drawing .BMapLib_hander_hover{
     background-position:0 -52px;
+    display: none;
 }
 
 /*画点图标*/
@@ -233,7 +234,7 @@
     width: 50px;
     height: 30px;
     margin-left: 15px;
-    background: #ffffff url("../images/confirm2.png") no-repeat top center;
+    /* background: #ffffff url("../images/confirm2.png") no-repeat top center; */
     background-size: contain;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.3);
     border-radius: 2px;
@@ -243,7 +244,7 @@
     width: 50px;
     height: 30px;
     margin-left: 8px;
-    background: #ffffff url("../images/cancel2.png") no-repeat top center;
+    /* background: #ffffff url("../images/cancel2.png") no-repeat top center; */
     background-size: contain;
     box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.3);
     border-radius: 2px;
